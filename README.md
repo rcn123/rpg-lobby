@@ -1,4 +1,16 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RPG Lobby
+
+A platform for finding and joining amazing RPG sessions, or creating your own adventures. Built with Next.js, TypeScript, and Tailwind CSS.
+
+## Features
+
+- 🎲 Browse and join RPG sessions
+- 🎭 Create your own sessions (one-time or recurring)
+- 👥 Player and GM profiles
+- 🎮 Support for multiple game systems
+- 📅 Session scheduling and timezone support
+- 🖼️ Image uploads for sessions
+- 🔐 Facebook authentication
 
 ## Getting Started
 

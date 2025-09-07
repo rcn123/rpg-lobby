@@ -1,0 +1,44 @@
+[
+  {
+    "id": "abea5369-1d39-4793-b979-0abc6af55767",
+    "email": "robert.carlsson@excellent.se",
+    "name": "Robert Carlsson",
+    "role": "Player",
+    "bio": "Love playing RPGs, especially D&D and Pathfinder. Looking for regular groups to join!",
+    "avatar": "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=24545807848363099&height=50&width=50&ext=1759736045&hash=AT8z7QgSpZhlcat8XBOjt8fV",
+    "location": "Stockholm, Sweden",
+    "timezone": "Europe/Stockholm",
+    "authProvider": "facebook",
+    "authProviderId": "24545807848363099",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-15T10:30:00Z"
+  },
+  {
+    "id": "user-456-google-example",
+    "email": "robert.carlsson@gmail.com",
+    "name": "Robert C",
+    "role": "GM",
+    "bio": "Experienced GM running weekly D&D campaigns",
+    "avatar": "https://lh3.googleusercontent.com/a/example-google-avatar",
+    "location": "Stockholm, Sweden",
+    "timezone": "Europe/Stockholm",
+    "authProvider": "google",
+    "authProviderId": "google_user_123",
+    "createdAt": "2024-01-10T14:20:00Z",
+    "updatedAt": "2024-01-10T14:20:00Z"
+  },
+  {
+    "id": "user-789-email-example",
+    "email": "robert@example.com",
+    "name": "Robert",
+    "role": "Player",
+    "bio": "New to RPGs, looking to learn!",
+    "avatar": null,
+    "location": "Stockholm, Sweden",
+    "timezone": "Europe/Stockholm",
+    "authProvider": "email",
+    "authProviderId": null,
+    "createdAt": "2024-01-20T09:15:00Z",
+    "updatedAt": "2024-01-20T09:15:00Z"
+  }
+]

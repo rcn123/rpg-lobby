@@ -1,27 +1,42 @@
 {
-  "name": "rpg-hug",
+  "name": "rpglobby",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:https": "next dev --turbopack --experimental-https --experimental-https-key ./localhost+2-key.pem --experimental-https-cert ./localhost+2.pem",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "lint:check": "eslint . --ext .ts,.tsx,.js,.jsx --max-warnings 0",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@lexical/headless": "^0.35.0",
+    "@lexical/link": "^0.35.0",
+    "@lexical/list": "^0.35.0",
+    "@lexical/plain-text": "^0.35.0",
+    "@lexical/react": "^0.35.0",
+    "@lexical/rich-text": "^0.35.0",
+    "@lexical/table": "^0.35.0",
+    "@supabase/supabase-js": "^2.57.2",
+    "lexical": "^0.35.0",
+    "next": "15.5.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.2"
+    "react-dropzone": "^14.3.8"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@next/bundle-analyzer": "^15.5.2",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
-    "@eslint/eslintrc": "^3"
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }

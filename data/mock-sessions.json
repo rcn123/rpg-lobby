@@ -1,0 +1,526 @@
+{
+  "sessions": [
+    {
+      "id": "1",
+      "title": "The Lost Mine of Phandelver",
+      "description": "A classic D&D 5e adventure perfect for beginners! Join us as we explore the mysterious mine and uncover its secrets. New players welcome - we'll help you create characters and learn the ropes.",
+      "gameSystem": { "id": "dnd-5e", "name": "D&D 5e", "description": "Dungeons & Dragons 5th Edition" },
+      "date": "2025-09-15",
+      "time": "19:00",
+      "duration": 240,
+      "endTime": "23:00",
+      "timezone": "Europe/Stockholm",
+      "state": "Published",
+      "sessionType": "one-time",
+      "maxPlayers": 6,
+      "currentPlayers": 3,
+      "gmId": "gm1",
+      "gm": {
+        "id": "gm1",
+        "name": "Sarah the Storyteller",
+        "email": "sarah@example.com",
+        "role": "GM",
+        "createdAt": "2024-08-01T10:00:00Z",
+        "updatedAt": "2024-08-01T10:00:00Z"
+      },
+      "isOnline": true,
+      "characterCreation": "pregenerated",
+      "location": {
+        "serverName": "RPG Lobby",
+        "channelName": "dnd-sessions",
+        "joinLink": "https://discord.gg/rpghub"
+      },
+      "image": "https://cdna.artstation.com/p/assets/images/images/071/584/100/large/xavier-rault-fantasy-dungeon-concept-art-1-min.jpg?1705497804",
+      "players": [
+        {
+          "id": "p1",
+          "name": "Alex",
+          "email": "alex@example.com",
+          "role": "Player",
+          "createdAt": "2024-08-15T10:00:00Z",
+          "updatedAt": "2024-08-15T10:00:00Z"
+        },
+        {
+          "id": "p2",
+          "name": "Jordan",
+          "email": "jordan@example.com",
+          "role": "Player",
+          "createdAt": "2024-08-20T10:00:00Z",
+          "updatedAt": "2024-08-20T10:00:00Z"
+        },
+        {
+          "id": "p3",
+          "name": "Casey",
+          "email": "casey@example.com",
+          "role": "Player",
+          "createdAt": "2024-08-25T10:00:00Z",
+          "updatedAt": "2024-08-25T10:00:00Z"
+        }
+      ],
+      "createdAt": "2025-09-01T10:00:00Z",
+      "updatedAt": "2025-09-01T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "title": "Cyberpunk Heist: Night City Nights",
+      "description": "High-tech, low-life action in the neon-soaked streets of Night City. Plan the perfect heist, deal with corporate intrigue, and try to survive in a world where style is everything.",
+      "gameSystem": { "id": "cyberpunk-red", "name": "Cyberpunk Red", "description": "Cyberpunk dystopian RPG" },
+      "date": "2025-09-16",
+      "time": "20:00",
+      "duration": 300,
+      "maxPlayers": 4,
+      "currentPlayers": 2,
+      "gmId": "gm2",
+      "gm": {
+        "id": "gm2",
+        "name": "Mike the Mercenary",
+        "email": "mike@example.com",
+        "role": "GM",
+        "createdAt": "2024-08-05T10:00:00Z",
+        "updatedAt": "2024-08-05T10:00:00Z"
+      },
+      "isOnline": false,
+      "characterCreation": "create-before-session",
+      "location": {
+        "name": "The Game Den",
+        "address": "123 Main Street, Downtown",
+        "city": "Springfield",
+        "state": "IL",
+        "zipCode": "62701",
+        "country": "USA",
+        "coordinates": {
+          "lat": 39.7817,
+          "lng": -89.6501
+        },
+        "description": "A cozy game store with multiple tables and a great atmosphere for RPGs"
+      },
+      "image": "https://images.unsplash.com/photo-1632084097309-e87d2128e626?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "players": [
+        {
+          "id": "p4",
+          "name": "Riley",
+          "email": "riley@example.com",
+          "role": "Player",
+          "createdAt": "2024-08-10T10:00:00Z",
+          "updatedAt": "2024-08-10T10:00:00Z"
+        },
+        {
+          "id": "p5",
+          "name": "Taylor",
+          "email": "taylor@example.com",
+          "role": "Player",
+          "createdAt": "2024-08-12T10:00:00Z",
+          "updatedAt": "2024-08-12T10:00:00Z"
+        }
+      ],
+      "createdAt": "2025-09-02T14:30:00Z",
+      "updatedAt": "2025-09-02T14:30:00Z"
+    },
+    {
+      "id": "3",
+      "title": "Call of Cthulhu: The Haunting",
+      "description": "Investigate the mysterious Corbitt House, where strange occurrences have been reported. A perfect introduction to cosmic horror and investigation-based gameplay.",
+      "gameSystem": { "id": "call-of-cthulhu", "name": "Call of Cthulhu", "description": "Horror investigation RPG" },
+      "date": "2025-09-17",
+      "time": "18:30",
+      "duration": 180,
+      "endTime": "22:00",
+      "timezone": "Europe/Stockholm",
+      "state": "Published",
+      "sessionType": "recurring",
+      "plannedSessions": 3,
+      "maxPlayers": 4,
+      "currentPlayers": 4,
+      "gmId": "gm3",
+      "gm": {
+        "id": "gm3",
+        "name": "Dr. Lovecraft",
+        "email": "lovecraft@example.com",
+        "role": "GM",
+        "preferredSystems": ["Call of Cthulhu", "Vampire: The Masquerade"],
+        "createdAt": "2024-08-03T10:00:00Z",
+        "updatedAt": "2024-08-03T10:00:00Z"
+      },
+      "isOnline": true,
+      "characterCreation": "create-in-beginning",
+      "location": {
+        "serverName": "RPG Lobby",
+        "channelName": "horror-sessions",
+        "joinLink": "https://discord.gg/rpghub"
+      },
+      "image": "https://plus.unsplash.com/premium_photo-1723877219812-c3d2f114d3a9?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "players": [
+        {
+          "id": "p6",
+          "name": "Morgan",
+          "email": "morgan@example.com",
+          "role": "Player",
+          "createdAt": "2024-08-18T10:00:00Z",
+          "updatedAt": "2024-08-18T10:00:00Z"
+        },
+        {
+          "id": "p7",
+          "name": "Avery",
+          "email": "avery@example.com",
+          "role": "Player",
+          "createdAt": "2024-08-22T10:00:00Z",
+          "updatedAt": "2024-08-22T10:00:00Z"
+        },
+        {
+          "id": "p8",
+          "name": "Quinn",
+          "email": "quinn@example.com",
+          "role": "Player",
+          "createdAt": "2024-08-28T10:00:00Z",
+          "updatedAt": "2024-08-28T10:00:00Z"
+        },
+        {
+          "id": "p9",
+          "name": "Sage",
+          "email": "sage@example.com",
+          "role": "Player",
+          "createdAt": "2025-09-01T10:00:00Z",
+          "updatedAt": "2025-09-01T10:00:00Z"
+        }
+      ],
+      "waitingList": [
+        {
+          "id": "w1",
+          "name": "Taylor",
+          "email": "taylor@example.com",
+          "role": "Player",
+          "createdAt": "2025-09-04T10:00:00Z",
+          "updatedAt": "2025-09-04T10:00:00Z"
+        },
+        {
+          "id": "w2",
+          "name": "Casey",
+          "email": "casey@example.com",
+          "role": "Player",
+          "createdAt": "2025-09-05T14:30:00Z",
+          "updatedAt": "2025-09-05T14:30:00Z"
+        }
+      ],
+      "waitingListCount": 2,
+      "createdAt": "2025-09-03T09:15:00Z",
+      "updatedAt": "2025-09-03T09:15:00Z"
+    },
+    {
+      "id": "4",
+      "title": "Pathfinder 2e: Beginner's Quest",
+      "description": "New to Pathfinder 2e? Join us for a beginner-friendly adventure! We'll cover character creation, basic rules, and dive into an exciting quest. Pre-generated characters available.",
+      "gameSystem": { "id": "pathfinder-2e", "name": "Pathfinder 2e", "description": "Pathfinder Second Edition" },
+      "date": "2025-10-08",
+      "time": "19:30",
+      "duration": 210,
+      "maxPlayers": 6,
+      "currentPlayers": 1,
+      "gmId": "gm4",
+      "gm": {
+        "id": "gm4",
+        "name": "Emma the Enchanter",
+        "email": "emma@example.com",
+        "role": "GM",
+        "createdAt": "2024-08-08T10:00:00Z",
+        "updatedAt": "2024-08-08T10:00:00Z"
+      },
+      "isOnline": true,
+      "characterCreation": "create-in-beginning",
+      "location": {
+        "serverName": "RPG Lobby",
+        "channelName": "pathfinder-sessions",
+        "joinLink": "https://discord.gg/rpghub"
+      },
+      "image": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop&crop=center",
+      "players": [
+        {
+          "id": "p10",
+          "name": "Blake",
+          "email": "blake@example.com",
+          "role": "Player",
+          "createdAt": "2024-08-30T10:00:00Z",
+          "updatedAt": "2024-08-30T10:00:00Z"
+        }
+      ],
+      "createdAt": "2025-09-04T16:45:00Z",
+      "updatedAt": "2025-09-04T16:45:00Z"
+    },
+    {
+      "id": "5",
+      "title": "Vampire: The Masquerade - Elysium Nights",
+      "description": "Navigate the complex politics of vampire society in modern nights. Intrigue, betrayal, and supernatural power struggles await in this dark urban fantasy.",
+      "gameSystem": { "id": "vampire-masquerade", "name": "Vampire: The Masquerade", "description": "Gothic punk vampire RPG" },
+      "date": "2025-10-19",
+      "time": "20:30",
+      "duration": 270,
+      "maxPlayers": 4,
+      "currentPlayers": 3,
+      "gmId": "gm5",
+      "gm": {
+        "id": "gm5",
+        "name": "Vlad the Storyteller",
+        "email": "vlad@example.com",
+        "role": "GM",
+        "createdAt": "2024-08-02T10:00:00Z",
+        "updatedAt": "2024-08-02T10:00:00Z"
+      },
+      "isOnline": false,
+      "characterCreation": "create-in-beginning",
+      "location": {
+        "name": "The Midnight Cafe",
+        "address": "456 Oak Avenue, Old Town",
+        "city": "Springfield",
+        "state": "IL",
+        "zipCode": "62702",
+        "country": "USA",
+        "coordinates": {
+          "lat": 39.7917,
+          "lng": -89.6401
+        },
+        "description": "A dimly lit cafe perfect for atmospheric vampire games"
+      },
+      "image": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop&crop=center",
+      "players": [
+        {
+          "id": "p11",
+          "name": "Drew",
+          "email": "drew@example.com",
+          "role": "Player",
+          "createdAt": "2024-08-14T10:00:00Z",
+          "updatedAt": "2024-08-14T10:00:00Z"
+        },
+        {
+          "id": "p12",
+          "name": "Sam",
+          "email": "sam@example.com",
+          "role": "Player",
+          "createdAt": "2024-08-19T10:00:00Z",
+          "updatedAt": "2024-08-19T10:00:00Z"
+        },
+        {
+          "id": "p13",
+          "name": "Jamie",
+          "email": "jamie@example.com",
+          "role": "Player",
+          "createdAt": "2024-08-26T10:00:00Z",
+          "updatedAt": "2024-08-26T10:00:00Z"
+        }
+      ],
+      "createdAt": "2025-09-05T11:20:00Z",
+      "updatedAt": "2025-09-05T11:20:00Z"
+    },
+    {
+      "id": "6",
+      "title": "Blades in the Dark: The Heist",
+      "description": "Plan and execute the perfect heist in the haunted city of Doskvol. Stealth, teamwork, and quick thinking required. Will you become legends or end up in Ironhook Prison?",
+      "gameSystem": { "id": "blades-in-dark", "name": "Blades in the Dark", "description": "Heist-focused fantasy RPG" },
+      "date": "2025-11-05",
+      "time": "19:00",
+      "duration": 240,
+      "endTime": "23:00",
+      "timezone": "Europe/Stockholm",
+      "state": "Published",
+      "sessionType": "one-time",
+      "maxPlayers": 5,
+      "currentPlayers": 5,
+      "gmId": "gm6",
+      "gm": {
+        "id": "gm6",
+        "name": "Luna the Shadow",
+        "email": "luna@example.com",
+        "role": "GM",
+        "createdAt": "2024-08-07T10:00:00Z",
+        "updatedAt": "2024-08-07T10:00:00Z"
+      },
+      "isOnline": true,
+      "characterCreation": "create-in-beginning",
+      "location": {
+        "serverName": "RPG Lobby",
+        "channelName": "blades-sessions",
+        "joinLink": "https://discord.gg/rpghub"
+      },
+      "image": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop&crop=center",
+      "players": [
+        {
+          "id": "p14",
+          "name": "River",
+          "email": "river@example.com",
+          "role": "Player",
+          "createdAt": "2024-08-16T10:00:00Z",
+          "updatedAt": "2024-08-16T10:00:00Z"
+        },
+        {
+          "id": "p15",
+          "name": "Phoenix",
+          "email": "phoenix@example.com",
+          "role": "Player",
+          "createdAt": "2024-08-21T10:00:00Z",
+          "updatedAt": "2024-08-21T10:00:00Z"
+        },
+        {
+          "id": "p16",
+          "name": "Skyler",
+          "email": "skyler@example.com",
+          "role": "Player",
+          "createdAt": "2024-08-27T10:00:00Z",
+          "updatedAt": "2024-08-27T10:00:00Z"
+        },
+        {
+          "id": "p17",
+          "name": "Rowan",
+          "email": "rowan@example.com",
+          "role": "Player",
+          "preferredSystems": ["Blades in the Dark", "Call of Cthulhu"],
+          "createdAt": "2024-08-29T10:00:00Z",
+          "updatedAt": "2024-08-29T10:00:00Z"
+        },
+        {
+          "id": "p18",
+          "name": "Indigo",
+          "email": "indigo@example.com",
+          "role": "Player",
+          "preferredSystems": ["Blades in the Dark", "Pathfinder 2e"],
+          "createdAt": "2025-09-02T10:00:00Z",
+          "updatedAt": "2025-09-02T10:00:00Z"
+        }
+      ],
+      "waitingList": [
+        {
+          "id": "w3",
+          "name": "Blake",
+          "email": "blake@example.com",
+          "role": "Player",
+          "createdAt": "2025-09-07T09:15:00Z",
+          "updatedAt": "2025-09-07T09:15:00Z"
+        }
+      ],
+      "waitingListCount": 1,
+      "createdAt": "2025-09-06T13:10:00Z",
+      "updatedAt": "2025-09-06T13:10:00Z"
+    },
+    {
+      "id": "7",
+      "title": "Monster of the Week: Small Town Mystery",
+      "description": "Something strange is happening in the quiet town of Millbrook. As investigators, you'll uncover the truth behind the disappearances and face the supernatural threat lurking in the shadows.",
+      "gameSystem": { "id": "monster-of-week", "name": "Monster of the Week", "description": "Supernatural investigation RPG" },
+      "date": "2025-11-21",
+      "time": "18:00",
+      "duration": 200,
+      "maxPlayers": 4,
+      "currentPlayers": 2,
+      "gmId": "gm7",
+      "gm": {
+        "id": "gm7",
+        "name": "Alex the Hunter",
+        "email": "alex@example.com",
+        "role": "GM",
+        "preferredSystems": ["Monster of the Week", "Call of Cthulhu"],
+        "createdAt": "2024-08-12T10:00:00Z",
+        "updatedAt": "2024-08-12T10:00:00Z"
+      },
+      "isOnline": false,
+      "characterCreation": "create-in-beginning",
+      "location": {
+        "name": "Community Center",
+        "address": "789 Pine Street, Westside",
+        "city": "Springfield",
+        "state": "IL",
+        "zipCode": "62703",
+        "country": "USA",
+        "coordinates": {
+          "lat": 39.8017,
+          "lng": -89.6201
+        },
+        "description": "A spacious community center with multiple rooms perfect for gaming"
+      },
+      "image": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop&crop=center",
+      "players": [
+        {
+          "id": "p19",
+          "name": "Cameron",
+          "email": "cameron@example.com",
+          "role": "Player",
+          "preferredSystems": ["Monster of the Week"],
+          "createdAt": "2024-08-24T10:00:00Z",
+          "updatedAt": "2024-08-24T10:00:00Z"
+        },
+        {
+          "id": "p20",
+          "name": "Dakota",
+          "email": "dakota@example.com",
+          "role": "Player",
+          "preferredSystems": ["Monster of the Week", "D&D 5e"],
+          "createdAt": "2024-08-31T10:00:00Z",
+          "updatedAt": "2024-08-31T10:00:00Z"
+        }
+      ],
+      "createdAt": "2025-09-07T08:30:00Z",
+      "updatedAt": "2025-09-07T08:30:00Z"
+    },
+    {
+      "id": "8",
+      "title": "FATE Core: Space Opera Adventure",
+      "description": "Embark on an epic space adventure where your choices shape the galaxy! Pilot starships, negotiate with alien species, and uncover ancient mysteries in this narrative-driven sci-fi epic.",
+      "gameSystem": { "id": "fate-core", "name": "FATE Core", "description": "Narrative-focused universal RPG" },
+      "date": "2025-11-22",
+      "time": "19:00",
+      "duration": 180,
+      "endTime": "22:00",
+      "timezone": "Europe/Stockholm",
+      "state": "Published",
+      "sessionType": "recurring",
+      "plannedSessions": 6,
+      "maxPlayers": 5,
+      "currentPlayers": 3,
+      "gmId": "gm8",
+      "gm": {
+        "id": "gm8",
+        "name": "Captain Nova",
+        "email": "nova@example.com",
+        "role": "GM",
+        "preferredSystems": ["FATE Core", "Savage Worlds"],
+        "createdAt": "2024-08-09T10:00:00Z",
+        "updatedAt": "2024-08-09T10:00:00Z"
+      },
+      "isOnline": true,
+      "characterCreation": "create-in-beginning",
+      "location": {
+        "serverName": "RPG Lobby",
+        "channelName": "fate-sessions",
+        "joinLink": "https://discord.gg/rpghub"
+      },
+      "image": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop&crop=center",
+      "players": [
+        {
+          "id": "p21",
+          "name": "Emery",
+          "email": "emery@example.com",
+          "role": "Player",
+          "preferredSystems": ["FATE Core", "D&D 5e"],
+          "createdAt": "2024-08-17T10:00:00Z",
+          "updatedAt": "2024-08-17T10:00:00Z"
+        },
+        {
+          "id": "p22",
+          "name": "Finley",
+          "email": "finley@example.com",
+          "role": "Player",
+          "preferredSystems": ["FATE Core", "Cyberpunk Red"],
+          "createdAt": "2024-08-23T10:00:00Z",
+          "updatedAt": "2024-08-23T10:00:00Z"
+        },
+        {
+          "id": "p23",
+          "name": "Harper",
+          "email": "harper@example.com",
+          "role": "Player",
+          "preferredSystems": ["FATE Core", "Blades in the Dark"],
+          "createdAt": "2024-08-30T10:00:00Z",
+          "updatedAt": "2024-08-30T10:00:00Z"
+        }
+      ],
+      "createdAt": "2025-09-08T12:15:00Z",
+      "updatedAt": "2025-09-08T12:15:00Z"
+    }
+  ]
+}
