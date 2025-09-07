@@ -1,11 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Layout } from '@/components/Layout';
-import { mockAuth } from '@/lib/services/mock-auth';
-import { USER_ROLES, TIMEZONES, GAME_SYSTEMS, type User } from '@/lib/types';
+import { apiClient } from '@/lib/services/api-client';
+import { TIMEZONES, GAME_SYSTEMS, type User } from '@/lib/types';
+import { useAuth } from '@/lib/auth-context';
 
 export default function ProfilePage() {
+  const router = useRouter();
+  const { signOut } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -14,7 +18,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const response = await mockAuth.getCurrentUserProfile();
+        const response = await apiClient.getCurrentUser();
         if (response.data) {
           setUser(response.data);
           setFormData(response.data);
@@ -34,6 +38,15 @@ export default function ProfilePage() {
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const handleSave = async () => {
@@ -143,22 +156,6 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Role
-                  </label>
-                  <select
-                    value={formData.role || ''}
-                    onChange={(e) => handleInputChange('role', e.target.value as any)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
-                  >
-                    {USER_ROLES.map((role) => (
-                      <option key={role} value={role}>
-                        {role}
-                      </option>
-                    ))}
-                  </select>
-                </div>
 
 
                 <div>
@@ -192,18 +189,6 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Bio
-                </label>
-                <textarea
-                  rows={4}
-                  value={formData.bio || ''}
-                  onChange={(e) => handleInputChange('bio', e.target.value)}
-                  placeholder="Tell us about yourself, your RPG experience, and what you're looking for..."
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
-                />
-              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -237,12 +222,20 @@ export default function ProfilePage() {
                 <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
                   Profile Information
                 </h2>
-                <button
-                  onClick={() => setEditing(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                >
-                  Edit Profile
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setEditing(true)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Edit Profile
+                  </button>
+                  <button
+                    onClick={handleSignOut}
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -260,12 +253,6 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div>
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Role</span>
-                  <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {user.role}
-                  </div>
-                </div>
 
 
                 {user.location && (
@@ -287,14 +274,6 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              {user.bio && (
-                <div>
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 block">Bio</span>
-                  <div className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {user.bio}
-                  </div>
-                </div>
-              )}
 
               {user.preferredSystems && user.preferredSystems.length > 0 && (
                 <div>

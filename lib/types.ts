@@ -8,8 +8,6 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: UserRole;
-  bio?: string; // Optional user bio/description
   avatar?: string; // Optional profile picture URL
   location?: string; // Optional location (city, country)
   timezone?: Timezone; // User's preferred timezone
@@ -172,9 +170,6 @@ export const TIMEZONES = [
 export type Timezone = typeof TIMEZONES[number];
 
 
-// User roles
-export const USER_ROLES = ['GM', 'Player'] as const;
-export type UserRole = typeof USER_ROLES[number];
 
 // Session states
 export const SESSION_STATES = ['Published', 'Suggested'] as const;

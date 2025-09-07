@@ -2,51 +2,15 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+// No direct Supabase imports needed - we'll use the API
 
 export default function AuthCallback() {
   const router = useRouter();
 
   useEffect(() => {
-    const handleAuthCallback = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Auth callback error:', error);
-          router.push('/auth/error?message=' + encodeURIComponent(error.message));
-          return;
-        }
-
-        if (data.session) {
-          // Check if this is a new user (first time signing in)
-          const { data: profile, error: profileError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', data.session.user.id)
-            .single();
-
-          if (profileError && profileError.code === 'PGRST116') {
-            // User doesn't exist in our users table, redirect to complete profile
-            router.push('/auth/complete-profile');
-          } else if (profileError) {
-            console.error('Profile fetch error:', profileError);
-            router.push('/auth/error?message=' + encodeURIComponent(profileError.message));
-          } else {
-            // User exists, redirect to main app
-            router.push('/sessions');
-          }
-        } else {
-          // No session, redirect to home
-          router.push('/');
-        }
-      } catch (error) {
-        console.error('Unexpected error:', error);
-        router.push('/auth/error?message=' + encodeURIComponent('An unexpected error occurred'));
-      }
-    };
-
-    handleAuthCallback();
+    // Simple redirect - let the auth context handle user creation
+    // The auth context will automatically create the user profile when needed
+    router.push('/sessions');
   }, [router]);
 
   return (

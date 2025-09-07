@@ -8,12 +8,12 @@ import { useAuth } from '@/lib/auth-context';
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { user, loading, signOut, isAuthenticated, needsProfileSetup } = useAuth();
+  const { user, loading, signOut, isAuthenticated } = useAuth();
 
   const navigation = [
     { name: 'Home', href: '/' },
     { name: 'Sessions', href: '/sessions' },
-    { name: 'Create Session', href: '/sessions/create' },
+    ...(isAuthenticated ? [{ name: 'Create Session', href: '/sessions/create' }] : []),
   ];
 
   const isActive = (href: string) => {
@@ -63,7 +63,7 @@ export function Navigation() {
           <div className="hidden md:ml-6 md:flex md:items-center">
             {loading ? (
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-            ) : isAuthenticated && !needsProfileSetup ? (
+            ) : isAuthenticated ? (
               <div className="ml-3 relative">
                 <div className="flex items-center space-x-4">
                   <span className="text-sm text-gray-700 dark:text-gray-300">
@@ -85,15 +85,6 @@ export function Navigation() {
                     )}
                   </Link>
                 </div>
-              </div>
-            ) : needsProfileSetup ? (
-              <div className="flex items-center space-x-4">
-                <Link
-                  href="/auth/complete-profile"
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
-                >
-                  Complete Profile
-                </Link>
               </div>
             ) : (
               <div className="flex items-center space-x-4">
@@ -173,7 +164,7 @@ export function Navigation() {
             ))}
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700">
-            {isAuthenticated && !needsProfileSetup ? (
+            {isAuthenticated ? (
               <Link href="/profile" className="flex items-center px-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" onClick={() => setIsMenuOpen(false)}>
                 <div className="flex-shrink-0">
                   <div className="h-10 w-10 rounded-full overflow-hidden">
@@ -201,16 +192,6 @@ export function Navigation() {
                   </div>
                 </div>
               </Link>
-            ) : needsProfileSetup ? (
-              <div className="px-4">
-                <Link
-                  href="/auth/complete-profile"
-                  className="w-full bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors text-center block"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Complete Profile
-                </Link>
-              </div>
             ) : (
               <div className="px-4">
                 <Link

@@ -1,16 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Layout } from '@/components/Layout';
 import { MainInformation, LocationSection, CharacterCreationSection, PlayersSection } from '@/components/SessionFormComponents';
 import { GAME_SYSTEMS, TIMEZONES, type CreateSessionData } from '@/lib/types';
+import { useAuth } from '@/lib/auth-context';
 
 type SessionWizardType = 'session' | 'series' | 'suggestion' | null;
 
 export default function CreateSessionPage() {
   const router = useRouter();
+  const { user, loading, isAuthenticated } = useAuth();
   const [wizardType, setWizardType] = useState<SessionWizardType>(null);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push('/auth/login');
+    }
+  }, [loading, isAuthenticated, router]);
+
+  // Show loading while checking authentication
+  if (loading) {
+    return (
+      <Layout>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Don't render anything if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   // If a wizard type is selected, show the appropriate form
   if (wizardType) {

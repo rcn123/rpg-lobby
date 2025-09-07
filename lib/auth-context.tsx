@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from './supabase';
-import { MockUserService } from './services/mock-user-service';
+import { apiClient } from './services/api-client';
 import type { User } from './types';
 
 interface AuthContextType {
@@ -10,7 +10,6 @@ interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
-  needsProfileSetup: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,34 +18,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [needsProfileSetup, setNeedsProfileSetup] = useState(false);
 
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      
       if (session?.user) {
-        // Check if user profile exists in our mock data
-        const userExists = await MockUserService.userExists(session.user.id);
-        
-        if (userExists) {
-          // Fetch user profile from mock service
-          const profile = await MockUserService.getUserById(session.user.id);
-          if (profile) {
+        // Check if user profile exists via API
+        try {
+          const profileResponse = await apiClient.getCurrentUser();
+          
+          if (profileResponse.success && profileResponse.data) {
             // Get Facebook avatar from user metadata if available
             const facebookAvatar = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture;
             setUser({
-              ...profile,
-              avatar: facebookAvatar || profile.avatar
+              ...profileResponse.data,
+              avatar: facebookAvatar || profileResponse.data.avatar
             });
             setIsAuthenticated(true);
-            setNeedsProfileSetup(false);
+          } else {
+            // User doesn't exist in our database yet - create profile automatically
+            try {
+              const createResponse = await apiClient.createUser({
+                name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'User',
+                avatar: session.user.user_metadata?.avatar_url || null,
+                location: null,
+                timezone: 'Europe/Stockholm',
+              });
+
+              if (createResponse.success && createResponse.data) {
+                setUser(createResponse.data);
+                setIsAuthenticated(true);
+              } else {
+                setUser(null);
+                setIsAuthenticated(false);
+              }
+            } catch (createError) {
+              setUser(null);
+              setIsAuthenticated(false);
+            }
           }
-        } else {
-          // User doesn't exist in our mock data yet - needs to complete profile
-          console.log('User profile not found, needs to complete profile setup');
-          setIsAuthenticated(true);
-          setNeedsProfileSetup(true);
+        } catch (error) {
+          // If API call fails (e.g., 401), user is not authenticated
+          setUser(null);
+          setIsAuthenticated(false);
         }
       }
       setLoading(false);
@@ -58,32 +74,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
-          // Check if user profile exists in our mock data
-          const userExists = await MockUserService.userExists(session.user.id);
-          
-          if (userExists) {
-            // Fetch user profile from mock service
-            const profile = await MockUserService.getUserById(session.user.id);
-            if (profile) {
+          // Check if user profile exists via API
+          try {
+            const profileResponse = await apiClient.getCurrentUser();
+            
+            if (profileResponse.success && profileResponse.data) {
               // Get Facebook avatar from user metadata if available
               const facebookAvatar = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture;
               setUser({
-                ...profile,
-                avatar: facebookAvatar || profile.avatar
+                ...profileResponse.data,
+                avatar: facebookAvatar || profileResponse.data.avatar
               });
               setIsAuthenticated(true);
-              setNeedsProfileSetup(false);
+            } else {
+              // User doesn't exist in our database yet - create profile automatically
+              try {
+                const createResponse = await apiClient.createUser({
+                  name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'User',
+                  avatar: session.user.user_metadata?.avatar_url || null,
+                  location: null,
+                  timezone: 'Europe/Stockholm',
+                });
+
+                if (createResponse.success && createResponse.data) {
+                  setUser(createResponse.data);
+                  setIsAuthenticated(true);
+                } else {
+                  setUser(null);
+                  setIsAuthenticated(false);
+                }
+              } catch (createError) {
+                setUser(null);
+                setIsAuthenticated(false);
+              }
             }
-          } else {
-            // User doesn't exist in our mock data yet - needs to complete profile
-            console.log('User profile not found, needs to complete profile setup');
-            setIsAuthenticated(true);
-            setNeedsProfileSetup(true);
+          } catch (error) {
+            // If API call fails (e.g., 401), user is not authenticated
+            setUser(null);
+            setIsAuthenticated(false);
           }
         } else {
           setUser(null);
           setIsAuthenticated(false);
-          setNeedsProfileSetup(false);
         }
         setLoading(false);
       }
@@ -100,7 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut, isAuthenticated, needsProfileSetup }}>
+    <AuthContext.Provider value={{ user, loading, signOut, isAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );

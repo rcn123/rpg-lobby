@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Layout } from '@/components/Layout';
-import { mockSessionsService } from '@/lib/services/mock-sessions';
-import { mockAuth } from '@/lib/services/mock-auth';
+import { apiClient } from '@/lib/services/api-client';
 import type { Session, Location, OnlineLocation } from '@/lib/types';
 
 export default function SessionDetailPage() {
@@ -25,7 +24,7 @@ export default function SessionDetailPage() {
         setError(null);
 
         // Load session
-        const sessionResponse = await mockSessionsService.getSession(params.id as string);
+        const sessionResponse = await apiClient.getSession(params.id as string);
         if (sessionResponse.success && sessionResponse.data) {
           setSession(sessionResponse.data);
         } else {
@@ -33,7 +32,7 @@ export default function SessionDetailPage() {
         }
 
         // Load current user
-        const userResponse = await mockAuth.getCurrentUser();
+        const userResponse = await apiClient.getCurrentAuthUser();
         if (userResponse.data) {
           setCurrentUser(userResponse.data);
         }
@@ -55,11 +54,11 @@ export default function SessionDetailPage() {
 
     setJoining(true);
     try {
-      const response = await mockSessionsService.joinSession(session.id, currentUser.id);
+      const response = await apiClient.joinSession(session.id);
       
       if (response.success) {
         // Reload session to update player count
-        const sessionResponse = await mockSessionsService.getSession(session.id);
+        const sessionResponse = await apiClient.getSession(session.id);
         if (sessionResponse.success && sessionResponse.data) {
           setSession(sessionResponse.data);
         }
@@ -79,11 +78,11 @@ export default function SessionDetailPage() {
 
     setJoining(true);
     try {
-      const response = await mockSessionsService.joinWaitingList(session.id, currentUser.id);
+      const response = await apiClient.joinWaitingList(session.id);
       
       if (response.success) {
         // Reload session to update waiting list
-        const sessionResponse = await mockSessionsService.getSession(session.id);
+        const sessionResponse = await apiClient.getSession(session.id);
         if (sessionResponse.success && sessionResponse.data) {
           setSession(sessionResponse.data);
         }

@@ -9,16 +9,14 @@ CREATE SESSION
 * Required experience level (as an extera optional feature), just as a hint
 * Pay/Cost per session or game
 
-* Session 0 (digital or information about it or template for it)
-
-* Förvalda karaktärer, lobby /digital session 0 [check]
-* Group Chat/board before (like meetup) 
 * GM can chose to publish to is friends/connectoin first (totally optional, but if you are a group of friends)
 
 
 ONGOING SESSION
-
 * Click on the user and get to his page
+* Group Chat/board before (like meetup) 
+* Session 0 (digital or information about it or template for it)
+
 
 PROFILE
 * Personal/Profile lists: Best RPG-podcasts

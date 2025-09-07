@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import { SessionFilters } from '@/components/SessionFilters';
 import { SessionCard } from '@/components/SessionCard';
 import { Layout } from '@/components/Layout';
-import { mockSessionsService } from '@/lib/services/mock-sessions';
-import { mockAuth } from '@/lib/services/mock-auth';
+import { apiClient } from '@/lib/services/api-client';
+import { useAuth } from '@/lib/auth-context';
 import type { Session, SessionFilters as SessionFiltersType } from '@/lib/types';
 
 export default function SessionsPage() {
+  const { isAuthenticated } = useAuth();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +22,7 @@ export default function SessionsPage() {
       setLoading(true);
       setError(null);
       
-      const response = await mockSessionsService.getSessions(filters);
+      const response = await apiClient.getSessions(filters);
       
       if (response.success && response.data) {
         setSessions(response.data);
@@ -38,7 +39,7 @@ export default function SessionsPage() {
   // Load current user
   const loadCurrentUser = async () => {
     try {
-      const response = await mockAuth.getCurrentUser();
+      const response = await apiClient.getCurrentAuthUser();
       if (response.data) {
         setCurrentUser(response.data);
       }
@@ -90,8 +91,10 @@ export default function SessionsPage() {
   }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    loadCurrentUser();
-  }, []);
+    if (isAuthenticated) {
+      loadCurrentUser();
+    }
+  }, [isAuthenticated]);
 
   return (
     <Layout>

@@ -28,23 +28,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const { data, error } = await auth.signInWithGoogle();
-      
-      if (error) {
-        setError(error);
-        setLoading(false);
-      }
-      // If successful, user will be redirected to callback page
-    } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
-      setLoading(false);
-    }
-  };
 
   return (
     <Layout>

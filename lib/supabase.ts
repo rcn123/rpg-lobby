@@ -1,11 +1,10 @@
 /**
  * Supabase client configuration
- * Provides both client-side and server-side Supabase instances
+ * Only what's actually used
  */
 
 import { createClient } from '@supabase/supabase-js';
 
-// Direct environment variable access to avoid config loading issues
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -17,24 +16,94 @@ if (!supabaseAnonKey) {
   throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable');
 }
 
-// Database types (we'll define these properly later)
+// Database types matching the actual schema from db_sql.sql
 export type Database = {
   public: {
     Tables: {
+      game_systems: {
+        Row: {
+          id: string;
+          name: string;
+          description: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          name: string;
+          description?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          description?: string | null;
+          created_at?: string;
+        };
+      };
+      users: {
+        Row: {
+          id: string;
+          jwt_id: string;
+          email: string;
+          name: string;
+          role: 'GM' | 'Player';
+          bio: string | null;
+          avatar: string | null;
+          location: string | null;
+          timezone: string;
+          auth_provider: 'facebook' | 'google' | 'email' | 'github' | 'discord';
+          auth_provider_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          jwt_id: string;
+          email: string;
+          name: string;
+          role: 'GM' | 'Player';
+          bio?: string | null;
+          avatar?: string | null;
+          location?: string | null;
+          timezone?: string;
+          auth_provider: 'facebook' | 'google' | 'email' | 'github' | 'discord';
+          auth_provider_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          jwt_id?: string;
+          email?: string;
+          name?: string;
+          role?: 'GM' | 'Player';
+          bio?: string | null;
+          avatar?: string | null;
+          location?: string | null;
+          timezone?: string;
+          auth_provider?: 'facebook' | 'google' | 'email' | 'github' | 'discord';
+          auth_provider_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       sessions: {
         Row: {
           id: string;
           title: string;
           description: string;
-          game_system: string;
-          date: string;
-          time: string;
-          duration: number;
+          image_url: string | null;
+          game_system_id: string;
+          date: string | null;
+          start_time: string | null;
+          end_time: string | null;
           max_players: number;
-          current_players: number;
-          gm_id: string;
+          gm_user_id: string;
           is_online: boolean;
-          location?: string;
+          location: any | null; // JSONB
+          session_type: 'single' | 'recurring' | 'campaign';
+          planned_sessions: number;
+          character_creation: 'pregenerated' | 'create_in_session' | 'create_before_session' | null;
           created_at: string;
           updated_at: string;
         };
@@ -42,15 +111,18 @@ export type Database = {
           id?: string;
           title: string;
           description: string;
-          game_system: string;
-          date: string;
-          time: string;
-          duration: number;
+          image_url?: string | null;
+          game_system_id: string;
+          date?: string | null;
+          start_time?: string | null;
+          end_time?: string | null;
           max_players: number;
-          current_players?: number;
-          gm_id: string;
-          is_online: boolean;
-          location?: string;
+          gm_user_id: string;
+          is_online?: boolean;
+          location?: any | null;
+          session_type: 'single' | 'recurring' | 'campaign';
+          planned_sessions?: number;
+          character_creation?: 'pregenerated' | 'create_in_session' | 'create_before_session' | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -58,49 +130,46 @@ export type Database = {
           id?: string;
           title?: string;
           description?: string;
-          game_system?: string;
-          date?: string;
-          time?: string;
-          duration?: number;
+          image_url?: string | null;
+          game_system_id?: string;
+          date?: string | null;
+          start_time?: string | null;
+          end_time?: string | null;
           max_players?: number;
-          current_players?: number;
-          gm_id?: string;
+          gm_user_id?: string;
           is_online?: boolean;
-          location?: string;
+          location?: any | null;
+          session_type?: 'single' | 'recurring' | 'campaign';
+          planned_sessions?: number;
+          character_creation?: 'pregenerated' | 'create_in_session' | 'create_before_session' | null;
           created_at?: string;
           updated_at?: string;
         };
       };
-      users: {
+      session_participants: {
         Row: {
           id: string;
-          email: string;
-          name: string;
-          role: 'GM' | 'Player';
-          experience: string;
-          preferred_systems: string[];
-          created_at: string;
-          updated_at: string;
+          session_id: string;
+          user_id: string;
+          joined_at: string;
+          cancelled_at: string | null;
+          queue_nr: number;
         };
         Insert: {
           id?: string;
-          email: string;
-          name: string;
-          role: 'GM' | 'Player';
-          experience: string;
-          preferred_systems?: string[];
-          created_at?: string;
-          updated_at?: string;
+          session_id: string;
+          user_id: string;
+          joined_at?: string;
+          cancelled_at?: string | null;
+          queue_nr?: number;
         };
         Update: {
           id?: string;
-          email?: string;
-          name?: string;
-          role?: 'GM' | 'Player';
-          experience?: string;
-          preferred_systems?: string[];
-          created_at?: string;
-          updated_at?: string;
+          session_id?: string;
+          user_id?: string;
+          joined_at?: string;
+          cancelled_at?: string | null;
+          queue_nr?: number;
         };
       };
     };
@@ -120,10 +189,10 @@ export const supabase = createClient<Database>(
   }
 );
 
-// Server-side Supabase instance (for API routes, server components)
+// Server-side Supabase instance (for API routes)
 export const supabaseAdmin = createClient<Database>(
   supabaseUrl,
-  supabaseServiceKey || 'dummy-key-for-now',
+  supabaseServiceKey || supabaseAnonKey, // Fallback to anon key if service key not available
   {
     auth: {
       autoRefreshToken: false,
@@ -131,8 +200,3 @@ export const supabaseAdmin = createClient<Database>(
     },
   }
 );
-
-// Helper function to get the appropriate Supabase client
-export function getSupabaseClient(isServer = false) {
-  return isServer ? supabaseAdmin : supabase;
-}

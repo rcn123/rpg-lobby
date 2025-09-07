@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { MockUserService } from '@/lib/services/mock-user-service';
+import { apiClient } from '@/lib/services/api-client';
 import { GAME_SYSTEMS } from '@/lib/types';
 import { Layout } from '@/components/Layout';
 
@@ -13,11 +13,8 @@ export default function CompleteProfile() {
   const [user, setUser] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: '',
-    role: 'Player' as 'GM' | 'Player',
-    bio: '',
     location: '',
     timezone: 'Europe/Stockholm',
-    preferredSystems: [] as string[],
   });
 
   useEffect(() => {
@@ -43,42 +40,18 @@ export default function CompleteProfile() {
         throw new Error('No user found');
       }
 
-      // Create user profile using mock service for now
-      const mockUserService = (await import('@/lib/services/mock-user-service')).default;
+      // Create user profile using API
       const newUser = {
-        id: user.id,
-        email: user.email || '',
         name: formData.name,
-        role: formData.role,
-        bio: formData.bio,
         location: formData.location,
         timezone: formData.timezone,
         avatar: user.user_metadata?.avatar_url || null,
-        authProvider: 'facebook' as const,
-        authProviderId: user.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
       };
       
-      await mockUserService.createUser(newUser);
-
-      // Add preferred systems
-      if (formData.preferredSystems.length > 0) {
-        const preferredSystemsData = formData.preferredSystems.map((systemId, index) => ({
-          user_id: user.id,
-          game_system_id: systemId,
-          order: index + 1,
-          created_at: new Date().toISOString(),
-        }));
-
-        const { error: systemsError } = await supabase
-          .from('user_preferred_systems')
-          .insert(preferredSystemsData);
-
-        if (systemsError) {
-          console.error('Error adding preferred systems:', systemsError);
-          // Don't throw here, profile creation was successful
-        }
+      const result = await apiClient.createUser(newUser);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create user profile');
       }
 
       // Redirect to main app
@@ -91,14 +64,6 @@ export default function CompleteProfile() {
     }
   };
 
-  const handleSystemToggle = (systemId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      preferredSystems: prev.preferredSystems.includes(systemId)
-        ? prev.preferredSystems.filter(id => id !== systemId)
-        : [...prev.preferredSystems, systemId],
-    }));
-  };
 
   if (!user) {
     return (
@@ -139,54 +104,6 @@ export default function CompleteProfile() {
               />
             </div>
 
-            {/* Role */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                I am primarily a... *
-              </label>
-              <div className="space-y-2">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="Player"
-                    checked={formData.role === 'Player'}
-                    onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as 'GM' | 'Player' }))}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                  />
-                  <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
-                    Player - I want to join RPG sessions
-                  </span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="GM"
-                    checked={formData.role === 'GM'}
-                    onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as 'GM' | 'Player' }))}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                  />
-                  <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
-                    Game Master - I want to run RPG sessions
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            {/* Bio */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Bio (Optional)
-              </label>
-              <textarea
-                value={formData.bio}
-                onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
-                placeholder="Tell us about your RPG experience and interests..."
-              />
-            </div>
 
             {/* Location */}
             <div>
@@ -202,30 +119,6 @@ export default function CompleteProfile() {
               />
             </div>
 
-            {/* Preferred Game Systems */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Preferred Game Systems (Optional)
-              </label>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                Select the game systems you're interested in playing:
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {GAME_SYSTEMS.map((system) => (
-                  <label key={system.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.preferredSystems.includes(system.id)}
-                      onChange={() => handleSystemToggle(system.id)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      {system.name}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
 
             {/* Submit Button */}
             <div className="pt-4">
