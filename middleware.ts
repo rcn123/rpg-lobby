@@ -11,10 +11,8 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // If user is not signed in and the current path is protected, redirect to login
-  if (!session && req.nextUrl.pathname.startsWith('/sessions/create')) {
-    return NextResponse.redirect(new URL('/', req.url));
-  }
+  // Let AuthGuard handle route protection instead of middleware
+  // This prevents server-side/client-side auth mismatches
 
   return res;
 }

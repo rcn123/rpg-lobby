@@ -1,19 +1,18 @@
-import { redirect } from 'next/navigation';
-import { Layout } from '@/components/Layout';
-import { getServerUser } from '@/lib/auth-server';
-import { CreateSessionForm } from '@/components/CreateSessionForm';
+'use client';
 
-export default async function CreateSessionPage() {
-  // Check authentication server-side
-  const user = await getServerUser();
-  
-  if (!user) {
-    redirect('/');
-  }
+import { Layout } from '@/components/Layout';
+import { AuthGuard } from '@/components/AuthGuard';
+import { CreateSessionForm } from '@/components/CreateSessionForm';
+import { useAuth } from '@/lib/auth-context';
+
+export default function CreateSessionPage() {
+  const { user } = useAuth();
 
   return (
-    <Layout>
-      <CreateSessionForm user={user} />
-    </Layout>
+    <AuthGuard>
+      <Layout>
+        {user && <CreateSessionForm user={user} />}
+      </Layout>
+    </AuthGuard>
   );
 }

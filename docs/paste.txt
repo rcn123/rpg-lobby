@@ -1,56 +1,73 @@
-Request URL
-http://localhost:3000/api/users
-Request Method
-POST
-Status Code
-401 Unauthorized
-Remote Address
-[::1]:3000
-Referrer Policy
-strict-origin-when-cross-origin
-connection
-keep-alive
-content-type
-application/json
-date
-Sun, 07 Sep 2025 17:18:32 GMT
-keep-alive
-timeout=5
-transfer-encoding
-chunked
-vary
-rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
-accept
-*/*
-accept-encoding
-gzip, deflate, br, zstd
-accept-language
-en-US,en;q=0.9,sv;q=0.8
-connection
-keep-alive
-content-length
-255
-content-type
-application/json
-cookie
-_ga=GA1.1.1827769741.1751476640; _ga_1ELCYSE80X=GS2.1.s1754508793$o47$g1$t1754508918$j60$l0$h0; __next_hmr_refresh_hash__=543
-host
-localhost:3000
-origin
-http://localhost:3000
-referer
-http://localhost:3000/sessions
-sec-ch-ua
-"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"
-sec-ch-ua-mobile
-?0
-sec-ch-ua-platform
-"Windows"
-sec-fetch-dest
-empty
-sec-fetch-mode
-cors
-sec-fetch-site
-same-origin
-user-agent
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36
+Why your AuthGuard might not be firing at all
+
+If:
+
+you see the user avatar in nav → context does work
+
+but AuthGuard shows no console logs and always redirects
+then the most likely causes are:
+
+AuthGuard is not mounted at all
+
+Wrong placement in the tree (e.g. wrapped inside a server component that never renders client children).
+
+Or you forgot 'use client' at the top of AuthGuard.
+
+useEffect not running
+
+If the component never mounts (see above).
+
+Or if it throws during render before reaching useEffect.
+
+Mismatch of context providers
+
+You might be using two different React trees (e.g. AuthProvider declared in layout.tsx but not actually wrapping your protected route). Then useAuth() returns the default context (empty state), so your guard thinks user = null.
+
+Redirect happening before logs
+
+If you’re calling redirect() (Next.js server action) instead of router.push() inside useEffect, logs won’t show because redirect short-circuits the render.
+
+Debugging steps I’d recommend
+
+Confirm the guard mounts
+
+'use client';
+export default function AuthGuard({ children }) {
+  console.log("AuthGuard rendered");
+  const { user, isAuthenticated } = useAuth();
+  useEffect(() => {
+    console.log("AuthGuard useEffect", { user, isAuthenticated });
+  }, [user, isAuthenticated]);
+  return children;
+}
+
+
+If you don’t see "AuthGuard rendered", it never mounted.
+
+Verify placement
+
+Is AuthGuard imported in a client component only?
+
+Is it inside the same AuthProvider as your nav?
+
+Check for duplicate providers
+
+Put console.log("AuthProvider mounted") in your provider.
+
+If you see it twice, you’ve got multiple providers → two different context values.
+
+Confirm router behavior
+
+If using redirect() from next/navigation, that runs on the server and won’t show client logs. Use router.push() from next/navigation in useEffect for client guards.
+
+Minimal repro
+Try making a test page with only:
+
+export default function ProtectedPage() {
+  return <AuthGuard> <div>secret stuff</div> </AuthGuard>
+}
+
+
+This cuts out layout/nav complexity.
+
+👉 My hunch: your AuthGuard isn’t actually mounting because it’s either missing 'use client' or being rendered in a server component tree. That would explain no logs + forced redirect.

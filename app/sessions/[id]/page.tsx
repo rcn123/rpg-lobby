@@ -221,12 +221,13 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
           <div className="lg:col-span-3 space-y-8">
             {/* Session Image */}
             {session.image && (
-              <div className="relative h-80 w-full rounded-lg overflow-hidden">
+              <div className="relative w-full rounded-lg overflow-hidden">
                 <Image
                   src={session.image}
                   alt={session.title}
-                  fill
-                  className="object-cover"
+                  width={800}
+                  height={320}
+                  className="w-full h-80 object-cover"
                 />
                 <div className="absolute top-4 left-4">
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${getSystemColor(session.gameSystem)}`}>

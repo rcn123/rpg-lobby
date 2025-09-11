@@ -83,16 +83,22 @@ export function SessionCard({ session, onJoin, onJoinWaitingList, onView, isJoin
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 dark:border-slate-700 overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 dark:border-slate-700 overflow-hidden h-full flex flex-col">
       {/* Session Image */}
       {session.image && (
-        <a href={`/sessions/${session.id}`} className="block relative h-48 w-full cursor-pointer">
-          <Image
-            src={session.image}
-            alt={session.title}
-            fill
-            className="object-cover hover:opacity-90 transition-opacity"
-          />
+        <a href={`/sessions/${session.id}`} className="block relative w-full cursor-pointer">
+          <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 relative">
+            <Image
+              src={session.image}
+              alt={session.title}
+              width={400}
+              height={192}
+              className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+              priority={false}
+              placeholder="blur"
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+            />
+          </div>
           <div className="absolute top-3 left-3 flex flex-col gap-1">
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSystemColor(session.gameSystem.id)}`}>
               {session.gameSystem.name}
@@ -115,7 +121,7 @@ export function SessionCard({ session, onJoin, onJoinWaitingList, onView, isJoin
         </a>
       )}
       
-      <div className="p-6">
+      <div className="p-6 flex-1 flex flex-col">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -196,7 +202,7 @@ export function SessionCard({ session, onJoin, onJoinWaitingList, onView, isJoin
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 mt-auto">
           <a
             href={`/sessions/${session.id}`}
             className="w-full bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors text-center"
