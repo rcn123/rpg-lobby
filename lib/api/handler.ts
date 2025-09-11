@@ -10,10 +10,12 @@ export function withHandler<T>(
       return NextResponse.json({ data });
     } catch (err) {
       if (err instanceof ApiError) {
+        console.error('🚨 API Error:', err.message, 'Status:', err.status);
         return NextResponse.json({ error: err.message }, { status: err.status });
       }
-      console.error(err);
-      return NextResponse.json({ error: "Unexpected error" }, { status: 500 });
+      console.error('💥 Unexpected error in API handler:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
   };
 }

@@ -61,7 +61,7 @@ export function Navigation() {
 
           {/* Right side - User menu */}
           <div className="hidden md:ml-6 md:flex md:items-center">
-            {loading ? (
+            {loading && isAuthenticated ? (
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
             ) : isAuthenticated ? (
               <div className="ml-3 relative">

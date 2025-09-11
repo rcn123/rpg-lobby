@@ -1,8 +1,7 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from './supabase';
-import { apiClient } from './services/api-client';
 import type { User } from './types';
 
 interface AuthContextType {
@@ -25,45 +24,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.user) {
-        // Check if user profile exists via API
-        try {
-          const profileResponse = await apiClient.getCurrentUser();
-          
-          if (profileResponse.success && profileResponse.data) {
-            // Get Facebook avatar from user metadata if available
-            const facebookAvatar = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture;
-            setUser({
-              ...profileResponse.data,
-              avatar: facebookAvatar || profileResponse.data.avatar
-            });
-            setIsAuthenticated(true);
-          } else {
-            // User doesn't exist in our database yet - create profile automatically
-            try {
-              const createResponse = await apiClient.createUser({
-                name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'User',
-                avatar: session.user.user_metadata?.avatar_url || null,
-                location: null,
-                timezone: 'Europe/Stockholm',
-              });
-
-              if (createResponse.success && createResponse.data) {
-                setUser(createResponse.data);
-                setIsAuthenticated(true);
-              } else {
-                setUser(null);
-                setIsAuthenticated(false);
-              }
-            } catch (createError) {
-              setUser(null);
-              setIsAuthenticated(false);
-            }
-          }
-        } catch (error) {
-          // If API call fails (e.g., 401), user is not authenticated
-          setUser(null);
-          setIsAuthenticated(false);
-        }
+        // Create user object from session data (no API calls)
+        const userData: User = {
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'User',
+          avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || undefined,
+          location: undefined,
+          timezone: 'Europe/Stockholm',
+          authProvider: 'email', // Default, could be extracted from metadata
+          authProviderId: undefined,
+          createdAt: session.user.created_at,
+          updatedAt: session.user.updated_at || session.user.created_at,
+        };
+        
+        setUser(userData);
+        setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
       }
       setLoading(false);
     };
@@ -73,46 +52,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔐 Auth state change:', event);
+        
         if (session?.user) {
-          // Check if user profile exists via API
-          try {
-            const profileResponse = await apiClient.getCurrentUser();
-            
-            if (profileResponse.success && profileResponse.data) {
-              // Get Facebook avatar from user metadata if available
-              const facebookAvatar = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture;
-              setUser({
-                ...profileResponse.data,
-                avatar: facebookAvatar || profileResponse.data.avatar
-              });
-              setIsAuthenticated(true);
-            } else {
-              // User doesn't exist in our database yet - create profile automatically
-              try {
-                const createResponse = await apiClient.createUser({
-                  name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'User',
-                  avatar: session.user.user_metadata?.avatar_url || null,
-                  location: null,
-                  timezone: 'Europe/Stockholm',
-                });
-
-                if (createResponse.success && createResponse.data) {
-                  setUser(createResponse.data);
-                  setIsAuthenticated(true);
-                } else {
-                  setUser(null);
-                  setIsAuthenticated(false);
-                }
-              } catch (createError) {
-                setUser(null);
-                setIsAuthenticated(false);
-              }
-            }
-          } catch (error) {
-            // If API call fails (e.g., 401), user is not authenticated
-            setUser(null);
-            setIsAuthenticated(false);
-          }
+          // Create user object from session data (no API calls)
+          const userData: User = {
+            id: session.user.id,
+            email: session.user.email || '',
+            name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'User',
+            avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || undefined,
+            location: undefined,
+            timezone: 'Europe/Stockholm',
+            authProvider: 'email',
+            authProviderId: undefined,
+            createdAt: session.user.created_at,
+            updatedAt: session.user.updated_at || session.user.created_at,
+          };
+          
+          setUser(userData);
+          setIsAuthenticated(true);
         } else {
           setUser(null);
           setIsAuthenticated(false);
@@ -128,7 +86,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
     setUser(null);
     setIsAuthenticated(false);
-    setNeedsProfileSetup(false);
   };
 
   return (
@@ -145,5 +102,3 @@ export function useAuth() {
   }
   return context;
 }
-
-

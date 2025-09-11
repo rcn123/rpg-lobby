@@ -45,74 +45,83 @@ export const sessionsService = {
   // Get all sessions with optional filters
   async getSessions(filters?: SessionFilters): Promise<ApiResponse<Session[]>> {
     try {
-      let query = supabaseAdmin
+      console.log('🗄️ Sessions service: Getting sessions with filters:', filters);
+      console.log('🔑 Using Supabase admin client with service role key:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+      console.log('🌐 Supabase URL available:', !!process.env.NEXT_PUBLIC_SUPABASE_URL);
+      console.log('🔑 Supabase anon key available:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+      
+      // Start with the simplest possible query
+      let query = (supabaseAdmin as any)
         .from('sessions')
-        .select(`
-          *,
-          game_systems!inner(*),
-          users!sessions_gm_user_id_fkey(*),
-          session_participants(
-            *,
-            users!session_participants_user_id_fkey(*)
-          )
-        `);
+        .select('*');
 
       // Apply filters
       if (filters?.gameSystem) {
+        console.log('🎮 Filtering by game system:', filters.gameSystem);
         query = query.eq('game_system_id', filters.gameSystem);
       }
       
       if (filters?.isOnline !== undefined) {
+        console.log('🌐 Filtering by online status:', filters.isOnline);
         query = query.eq('is_online', filters.isOnline);
       }
 
       if (filters?.city) {
+        console.log('🏙️ Filtering by city:', filters.city);
         // For now, we'll filter client-side since location is JSONB
         // TODO: Implement proper JSONB filtering in Supabase
       }
 
-      const { data, error } = await query.order('date', { ascending: true });
+      console.log('🔍 Executing database query...');
+      
+      // First, let's test if the sessions table exists at all
+      const { data: testData, error: testError } = await (supabaseAdmin as any)
+        .from('sessions')
+        .select('id')
+        .limit(1);
+      
+      console.log('🧪 Test query result:', { testData, testError });
+      
+      if (testError) {
+        console.error('❌ Sessions table test failed:', testError);
+        return { data: null, error: `Database error: ${testError.message}`, success: false };
+      }
+      
+      const { data, error } = await (query as any).order('date', { ascending: true });
+      console.log('📊 Database response:', { data: data?.length || 0, error });
 
       if (error) {
+        console.error('❌ Database error:', error);
         return { data: null, error: error.message, success: false };
       }
 
       if (!data) {
+        console.log('📭 No sessions found in database');
         return { data: [], error: null, success: true };
       }
 
       // Transform the data
-      const sessions: Session[] = data.map(row => {
-        const gameSystem = GAME_SYSTEMS.find(gs => gs.id === row.game_system_id) || 
-                          { id: row.game_system_id, name: row.game_systems?.name || 'Unknown' };
+      const sessions: Session[] = data.map((row: any) => {
+        // Use a default game system since we're not joining with game_systems table
+        const gameSystem = GAME_SYSTEMS.find(gs => gs.id === (row as any).game_system_id) || 
+                          { id: (row as any).game_system_id, name: 'Unknown System' };
         
-        const gm = row.users ? {
-          id: row.users.id,
-          email: row.users.email,
-          name: row.users.name,
-          avatar: row.users.avatar,
-          location: row.users.location,
-          timezone: row.users.timezone,
-          authProvider: row.users.auth_provider,
-          authProviderId: row.users.auth_provider_id,
-          createdAt: row.users.created_at,
-          updatedAt: row.users.updated_at,
-        } : undefined;
+        // For now, we'll create a minimal GM object since we're not joining with users table
+        const gm = {
+          id: (row as any).gm_user_id,
+          email: 'unknown@example.com',
+          name: 'Unknown GM',
+          avatar: undefined,
+          location: undefined,
+          timezone: 'Europe/Stockholm' as const,
+          authProvider: 'email' as const,
+          authProviderId: undefined,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
 
-        const players = row.session_participants
-          ?.filter((p: any) => !p.cancelled_at)
-          ?.map((p: any) => ({
-            id: p.users.id,
-            email: p.users.email,
-            name: p.users.name,
-            avatar: p.users.avatar,
-            location: p.users.location,
-            timezone: p.users.timezone,
-            authProvider: p.users.auth_provider,
-            authProviderId: p.users.auth_provider_id,
-            createdAt: p.users.created_at,
-            updatedAt: p.users.updated_at,
-          })) || [];
+        // Set players to empty array since we simplified the query
+        const players: any[] = [];
 
         return transformSessionRow(row, gameSystem, gm, players);
       });
@@ -128,11 +137,13 @@ export const sessionsService = {
         });
       }
 
+      console.log('🎯 Final filtered sessions:', filteredSessions.length);
       return { data: filteredSessions, error: null, success: true };
     } catch (error) {
+      console.error('💥 Sessions service getSessions error:', error);
       return { 
         data: null, 
-        error: error instanceof Error ? error.message : 'Unknown error', 
+        error: error instanceof Error ? error.message : 'Database connection error', 
         success: false 
       };
     }
@@ -141,7 +152,7 @@ export const sessionsService = {
   // Get single session by ID
   async getSession(id: string): Promise<ApiResponse<Session>> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabaseAdmin as any)
         .from('sessions')
         .select(`
           *,
@@ -209,6 +220,9 @@ export const sessionsService = {
   // Create new session
   async createSession(sessionData: CreateSessionData, gmId: string): Promise<ApiResponse<Session>> {
     try {
+      console.log('🗄️ Sessions service: Creating session');
+      console.log('👤 GM ID:', gmId);
+      console.log('📝 Session data:', sessionData);
       // Calculate end time if we have start time and duration
       let endTime = null;
       if (sessionData.time !== 'TBD' && sessionData.duration > 0) {
@@ -236,7 +250,8 @@ export const sessionsService = {
                            sessionData.characterCreation === 'create-before-session' ? 'create_before_session' : 'pregenerated',
       };
 
-      const { data, error } = await supabase
+      console.log('💾 Inserting session into database:', insertData);
+      const { data, error } = await (supabaseAdmin as any)
         .from('sessions')
         .insert(insertData)
         .select(`
@@ -247,8 +262,11 @@ export const sessionsService = {
         .single();
 
       if (error) {
+        console.error('❌ Database insert error:', error);
         return { data: null, error: error.message, success: false };
       }
+
+      console.log('✅ Session inserted successfully:', data);
 
       const gameSystem = GAME_SYSTEMS.find(gs => gs.id === data.game_system_id) || 
                         { id: data.game_system_id, name: data.game_systems?.name || 'Unknown' };
@@ -313,7 +331,7 @@ export const sessionsService = {
                                        updates.characterCreation === 'create-before-session' ? 'create_before_session' : 'pregenerated';
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabaseAdmin as any)
         .from('sessions')
         .update(updateData)
         .eq('id', id)
@@ -378,7 +396,7 @@ export const sessionsService = {
   // Delete session
   async deleteSession(id: string): Promise<ApiResponse<boolean>> {
     try {
-      const { error } = await supabase
+      const { error } = await (supabaseAdmin as any)
         .from('sessions')
         .delete()
         .eq('id', id);
@@ -401,7 +419,7 @@ export const sessionsService = {
   async joinSession(sessionId: string, userId: string): Promise<ApiResponse<boolean>> {
     try {
       // First check if session exists and has space
-      const { data: session, error: sessionError } = await supabase
+      const { data: session, error: sessionError } = await (supabaseAdmin as any)
         .from('sessions')
         .select(`
           max_players,
@@ -427,7 +445,7 @@ export const sessionsService = {
       }
 
       // Add user to session
-      const { error } = await supabase
+      const { error } = await (supabaseAdmin as any)
         .from('session_participants')
         .insert({
           session_id: sessionId,
@@ -453,7 +471,7 @@ export const sessionsService = {
   async joinWaitingList(sessionId: string, userId: string): Promise<ApiResponse<boolean>> {
     try {
       // First check if session exists
-      const { data: session, error: sessionError } = await supabase
+      const { data: session, error: sessionError } = await (supabaseAdmin as any)
         .from('sessions')
         .select(`
           max_players,
@@ -482,7 +500,7 @@ export const sessionsService = {
       }
 
       // Add user to waiting list
-      const { error } = await supabase
+      const { error } = await (supabaseAdmin as any)
         .from('session_participants')
         .insert({
           session_id: sessionId,
@@ -507,7 +525,7 @@ export const sessionsService = {
   // Leave session
   async leaveSession(sessionId: string, userId: string): Promise<ApiResponse<boolean>> {
     try {
-      const { error } = await supabase
+      const { error } = await (supabaseAdmin as any)
         .from('session_participants')
         .update({ cancelled_at: new Date().toISOString() })
         .eq('session_id', sessionId)

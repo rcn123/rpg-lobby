@@ -20,10 +20,25 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     try {
+      console.log(`🌐 API Request: ${options.method || 'GET'} ${endpoint}`);
+      
       // Get the current session token
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('🔑 Session token available:', !!session?.access_token);
+      console.log('🔑 Session details:', { 
+        hasSession: !!session, 
+        hasUser: !!session?.user, 
+        hasToken: !!session?.access_token,
+        tokenLength: session?.access_token?.length || 0
+      });
       
       const url = `${this.baseUrl}${endpoint}`;
+      console.log('🔗 Full URL:', url);
+      
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
@@ -32,12 +47,18 @@ class ApiClient {
           }),
           ...options.headers,
         },
+        signal: controller.signal,
         ...options,
       });
 
+      clearTimeout(timeoutId);
+
+      console.log('📡 Response status:', response.status, response.statusText);
       const data = await response.json();
+      console.log('📦 Response data:', data);
 
       if (!response.ok) {
+        console.error('❌ API Error:', data.error || `HTTP ${response.status}`);
         return {
           data: null,
           error: data.error || `HTTP ${response.status}`,
@@ -45,12 +66,14 @@ class ApiClient {
         };
       }
 
+      console.log('✅ API Success:', data.data);
       return {
         data: data.data,
         error: null,
         success: true,
       };
     } catch (error) {
+      console.error('💥 API Request failed:', error);
       return {
         data: null,
         error: error instanceof Error ? error.message : 'Network error',

@@ -1,6 +1,5 @@
 
-
-
+ 
 
 CREATE SESSION
 * A meeting scheduler on the session page, where all participants can vote
@@ -8,9 +7,9 @@ CREATE SESSION
 * GM experience level on (as an extera optional feature)
 * Required experience level (as an extera optional feature), just as a hint
 * Pay/Cost per session or game
-
-* GM can chose to publish to is friends/connectoin first (totally optional, but if you are a group of friends)
-
+* GM can chose to publish to is friends/connection first (totally optional, but if you are a group of friends)
+* Language 
+* Cost per session
 
 ONGOING SESSION
 * Click on the user and get to his page

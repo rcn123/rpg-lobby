@@ -1,100 +1,29 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Layout } from '@/components/Layout';
-import { apiClient } from '@/lib/services/api-client';
-import type { Session, Location, OnlineLocation } from '@/lib/types';
+import { sessionsService } from '@/lib/services/sessions';
+import type { Session } from '@/lib/types';
 
-export default function SessionDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<{ id: string; email: string } | null>(null);
-  const [joining, setJoining] = useState(false);
+interface SessionDetailPageProps {
+  params: { id: string };
+}
 
-  // Load session and current user
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+export default async function SessionDetailPage({ params }: SessionDetailPageProps) {
+  // Load session directly from the service
+  let session: Session | null = null;
+  let error: string | null = null;
 
-        // Load session
-        const sessionResponse = await apiClient.getSession(params.id as string);
-        if (sessionResponse.success && sessionResponse.data) {
-          setSession(sessionResponse.data);
-        } else {
-          setError(sessionResponse.error || 'Session not found');
-        }
-
-        // Load current user
-        const userResponse = await apiClient.getCurrentAuthUser();
-        if (userResponse.data) {
-          setCurrentUser(userResponse.data);
-        }
-      } catch (err) {
-        setError('An unexpected error occurred');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (params.id) {
-      loadData();
+  try {
+    const { id } = await params;
+    const result = await sessionsService.getSession(id);
+    if (result.success && result.data) {
+      session = result.data;
+    } else {
+      error = result.error || 'Session not found';
     }
-  }, [params.id]);
+  } catch (err) {
+    error = err instanceof Error ? err.message : 'An unexpected error occurred';
+  }
 
-  // Handle joining session
-  const handleJoinSession = async () => {
-    if (!currentUser || !session) return;
-
-    setJoining(true);
-    try {
-      const response = await apiClient.joinSession(session.id);
-      
-      if (response.success) {
-        // Reload session to update player count
-        const sessionResponse = await apiClient.getSession(session.id);
-        if (sessionResponse.success && sessionResponse.data) {
-          setSession(sessionResponse.data);
-        }
-      } else {
-        setError(response.error || 'Failed to join session');
-      }
-    } catch (err) {
-      setError('An unexpected error occurred');
-    } finally {
-      setJoining(false);
-    }
-  };
-
-  // Handle joining waiting list
-  const handleJoinWaitingList = async () => {
-    if (!currentUser || !session) return;
-
-    setJoining(true);
-    try {
-      const response = await apiClient.joinWaitingList(session.id);
-      
-      if (response.success) {
-        // Reload session to update waiting list
-        const sessionResponse = await apiClient.getSession(session.id);
-        if (sessionResponse.success && sessionResponse.data) {
-          setSession(sessionResponse.data);
-        }
-      } else {
-        setError(response.error || 'Failed to join waiting list');
-      }
-    } catch (err) {
-      setError('An unexpected error occurred');
-    } finally {
-      setJoining(false);
-    }
-  };
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -226,15 +155,6 @@ export default function SessionDetailPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </Layout>
-    );
-  }
 
   if (error || !session) {
     return (
@@ -247,12 +167,12 @@ export default function SessionDetailPage() {
             <p className="text-gray-600 dark:text-gray-300 mb-6">
               {error || 'The session you are looking for does not exist.'}
             </p>
-            <button
-              onClick={() => router.push('/sessions')}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            <a
+              href="/sessions"
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors inline-block"
             >
               Back to Sessions
-            </button>
+            </a>
           </div>
         </div>
       </Layout>
@@ -264,15 +184,15 @@ export default function SessionDetailPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Navigation */}
         <div className="mb-6">
-          <button
-            onClick={() => router.push('/sessions')}
+          <a
+            href="/sessions"
             className="flex items-center gap-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Back to Sessions
-          </button>
+          </a>
         </div>
 
         {/* Error Message */}
@@ -490,36 +410,17 @@ export default function SessionDetailPage() {
                   </div>
                 )}
 
-                {currentUser ? (
-                  session.currentPlayers >= session.maxPlayers ? (
-                    // Session is full - show waiting list option
-                    <button
-                      onClick={handleJoinWaitingList}
-                      disabled={joining}
-                      className="w-full px-4 py-3 rounded-lg font-medium transition-colors bg-orange-600 text-white hover:bg-orange-700 disabled:bg-orange-400"
-                    >
-                      {joining ? 'Joining...' : 'Join Waiting List'}
-                    </button>
-                  ) : (
-                    // Session has spots available
-                    <button
-                      onClick={handleJoinSession}
-                      disabled={joining}
-                      className="w-full px-4 py-3 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-400"
-                    >
-                      {joining ? 'Joining...' : 'Join Session'}
-                    </button>
-                  )
-                ) : (
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                      You need to be logged in to join this session
-                    </p>
-                    <button className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                      Sign In
-                    </button>
-                  </div>
-                )}
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    Join functionality coming soon
+                  </p>
+                  <button 
+                    disabled
+                    className="w-full bg-gray-400 text-white px-4 py-3 rounded-lg font-medium cursor-not-allowed"
+                  >
+                    Join Session
+                  </button>
+                </div>
               </div>
             </div>
 
