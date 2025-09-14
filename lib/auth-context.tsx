@@ -21,7 +21,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
+      console.log('🔐 AuthProvider: Getting initial session...');
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('🔐 AuthProvider: Initial session:', { hasSession: !!session, hasUser: !!session?.user });
       
       if (session?.user) {
         // Create user object from session data (no API calls)
@@ -38,9 +40,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           updatedAt: session.user.updated_at || session.user.created_at,
         };
         
+        console.log('🔐 AuthProvider: Setting authenticated user:', userData.email);
         setUser(userData);
         setIsAuthenticated(true);
       } else {
+        console.log('🔐 AuthProvider: No session, setting unauthenticated');
         setUser(null);
         setIsAuthenticated(false);
       }
@@ -52,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔐 Auth state change:', event);
+        console.log('🔐 Auth state change:', event, { hasSession: !!session, hasUser: !!session?.user });
         
         if (session?.user) {
           // Create user object from session data (no API calls)
@@ -69,9 +73,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             updatedAt: session.user.updated_at || session.user.created_at,
           };
           
+          console.log('🔐 AuthProvider: Auth change - setting authenticated user:', userData.email);
           setUser(userData);
           setIsAuthenticated(true);
         } else {
+          console.log('🔐 AuthProvider: Auth change - no session, setting unauthenticated');
           setUser(null);
           setIsAuthenticated(false);
         }

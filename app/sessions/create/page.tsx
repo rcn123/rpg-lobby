@@ -5,14 +5,20 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { CreateSessionForm } from '@/components/CreateSessionForm';
 import { useAuth } from '@/lib/auth-context';
 
-export default function CreateSessionPage() {
+function CreateSessionContent() {
   const { user } = useAuth();
 
   return (
+    <Layout>
+      {user && <CreateSessionForm user={user} />}
+    </Layout>
+  );
+}
+
+export default function CreateSessionPage() {
+  return (
     <AuthGuard>
-      <Layout>
-        {user && <CreateSessionForm user={user} />}
-      </Layout>
+      <CreateSessionContent />
     </AuthGuard>
   );
 }

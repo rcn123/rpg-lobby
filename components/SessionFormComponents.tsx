@@ -255,3 +255,99 @@ export function PlayersSection({ formData, onInputChange }: PlayersSectionProps)
     </div>
   );
 }
+
+interface SchedulingSectionProps {
+  formData: CreateSessionData;
+  onInputChange: (field: keyof CreateSessionData, value: string | number | boolean) => void;
+}
+
+export function SchedulingSection({ formData, onInputChange }: SchedulingSectionProps) {
+  // Generate time options with 30-minute intervals
+  const generateTimeOptions = () => {
+    const options = [];
+    for (let hour = 0; hour < 24; hour++) {
+      for (let minute of [0, 30]) {
+        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        options.push(timeString);
+      }
+    }
+    return options;
+  };
+
+  const timeOptions = generateTimeOptions();
+
+  // Calculate end time when start time changes
+  const handleStartTimeChange = (startTime: string) => {
+    onInputChange('time', startTime);
+    
+    // Auto-calculate end time (start time + 3 hours)
+    if (startTime) {
+      const [hours, minutes] = startTime.split(':').map(Number);
+      const startDate = new Date();
+      startDate.setHours(hours, minutes, 0, 0);
+      
+      const endDate = new Date(startDate.getTime() + (3 * 60 * 60 * 1000)); // Add 3 hours
+      const endTime = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
+      
+      onInputChange('endTime', endTime);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-slate-600 pb-2">
+        Scheduling
+      </h3>
+      
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Date *
+        </label>
+        <input
+          type="date"
+          required
+          value={formData.date}
+          onChange={(e) => onInputChange('date', e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+        />
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Start Time *
+          </label>
+          <select
+            required
+            value={formData.time}
+            onChange={(e) => handleStartTimeChange(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+          >
+            {timeOptions.map((time) => (
+              <option key={time} value={time}>
+                {time}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            End Time *
+          </label>
+          <select
+            required
+            value={formData.endTime || ''}
+            onChange={(e) => onInputChange('endTime', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+          >
+            {timeOptions.map((time) => (
+              <option key={time} value={time}>
+                {time}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MainInformation, LocationSection, CharacterCreationSection, PlayersSection } from '@/components/SessionFormComponents';
+import { MainInformation, LocationSection, CharacterCreationSection, PlayersSection, SchedulingSection } from '@/components/SessionFormComponents';
 import { GAME_SYSTEMS, type CreateSessionData, type User } from '@/lib/types';
 import { apiClient } from '@/lib/services/api-client';
 
@@ -148,17 +148,35 @@ function SessionForm({ user, onSuccess, onCancel }: { user: User; onSuccess: () 
   const [formData, setFormData] = useState<CreateSessionData>({
     title: '',
     description: '',
-    gameSystem: 'dnd-5e',
+    gameSystem: GAME_SYSTEMS[0], // Default to first game system
     date: '',
-    time: '',
-    endTime: '',
+    time: '19:00', // Default to 19:00
+    endTime: '22:00', // Default to 22:00 (19:00 + 3 hours)
+    state: 'Published',
+    sessionType: 'one-time',
+    plannedSessions: 1,
     maxPlayers: 4,
     isOnline: true,
     location: { serverName: '', channelName: '', joinLink: '' },
     characterCreation: 'pregenerated',
-    sessionType: 'one-time',
-    plannedSessions: 1,
   });
+
+  const handleInputChange = (field: keyof CreateSessionData, value: string | number | boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleLocationChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      location: {
+        ...prev.location,
+        [field]: value
+      }
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,10 +190,11 @@ function SessionForm({ user, onSuccess, onCancel }: { user: User; onSuccess: () 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <MainInformation formData={formData} setFormData={setFormData} />
-      <LocationSection formData={formData} setFormData={setFormData} />
-      <CharacterCreationSection formData={formData} setFormData={setFormData} />
-      <PlayersSection formData={formData} setFormData={setFormData} />
+      <MainInformation formData={formData} onInputChange={handleInputChange} />
+      <SchedulingSection formData={formData} onInputChange={handleInputChange} />
+      <LocationSection formData={formData} onInputChange={handleInputChange} onLocationChange={handleLocationChange} />
+      <CharacterCreationSection formData={formData} onInputChange={handleInputChange} />
+      <PlayersSection formData={formData} onInputChange={handleInputChange} />
       
       <div className="flex gap-4">
         <button

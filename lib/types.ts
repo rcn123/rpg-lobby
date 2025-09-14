@@ -94,8 +94,7 @@ export interface CreateSessionData {
   gameSystem: GameSystem;
   date: string;
   time: string;
-  duration: number; // in hours
-  timezone: string;
+  endTime: string;
   state: SessionState;
   sessionType: SessionType;
   plannedSessions?: number;

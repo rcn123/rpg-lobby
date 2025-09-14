@@ -223,13 +223,8 @@ export const sessionsService = {
       console.log('🗄️ Sessions service: Creating session');
       console.log('👤 GM ID:', gmId);
       console.log('📝 Session data:', sessionData);
-      // Calculate end time if we have start time and duration
-      let endTime = null;
-      if (sessionData.time !== 'TBD' && sessionData.duration > 0) {
-        const startTime = new Date(`2000-01-01T${sessionData.time}`);
-        const endTimeDate = new Date(startTime.getTime() + (sessionData.duration * 60 * 1000));
-        endTime = endTimeDate.toTimeString().slice(0, 5);
-      }
+      // Use endTime directly from form data
+      const endTime = sessionData.endTime && sessionData.endTime !== 'TBD' ? sessionData.endTime : null;
 
       const insertData = {
         title: sessionData.title,

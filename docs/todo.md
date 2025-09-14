@@ -10,12 +10,19 @@ CREATE SESSION
 * GM can chose to publish to is friends/connection first (totally optional, but if you are a group of friends)
 * Language 
 * Cost per session
+* Start and stop time, only whole and half hours
+* Not duration, start and end time
+* start time default to 1900
+* Sesson typefault to In-person
+* Remove time zone
+* Use MUI time picker
+
 
 ONGOING SESSION
 * Click on the user and get to his page
 * Group Chat/board before (like meetup) 
 * Session 0 (digital or information about it or template for it)
-
+* Special "members area" , share pregens, bla and bla
 
 PROFILE
 * Personal/Profile lists: Best RPG-podcasts
