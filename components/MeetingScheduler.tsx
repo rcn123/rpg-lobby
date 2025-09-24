@@ -48,6 +48,22 @@ export function MeetingScheduler({
     return a.startTime.localeCompare(b.startTime);
   });
 
+  // Group time slots by date and assign alternating colors
+  const getColumnColors = () => {
+    const uniqueDates = [...new Set(sortedTimeSlots.map(slot => slot.date))].sort();
+    const dateColorMap = new Map();
+    
+    uniqueDates.forEach((date, index) => {
+      // Alternate between light and dark colors
+      const isLight = index % 2 === 0;
+      dateColorMap.set(date, isLight ? 'light' : 'dark');
+    });
+    
+    return dateColorMap;
+  };
+
+  const dateColorMap = getColumnColors();
+
   const addTimeSlot = () => {
     if (newSlot.date && newSlot.startTime) {
       const slot: TimeSlot = {
@@ -213,9 +229,13 @@ export function MeetingScheduler({
                     const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
                     const dayNumber = dateObj.getDate();
                     const monthName = dateObj.toLocaleDateString('en-US', { month: 'short' });
+                    const columnColor = dateColorMap.get(slot.date);
+                    const bgColor = columnColor === 'light' 
+                      ? 'bg-gray-100 dark:bg-gray-700' 
+                      : 'bg-gray-200 dark:bg-gray-600';
                     
                     return (
-                      <th key={slot.id} className="text-left p-3 font-semibold text-gray-900 dark:text-white w-32">
+                      <th key={slot.id} className={`text-left p-3 font-semibold text-gray-900 dark:text-white w-32 ${bgColor}`}>
                         <div>
                           <div className="text-sm">{dayName}</div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -233,23 +253,30 @@ export function MeetingScheduler({
                   <td className="p-3 font-medium text-gray-900 dark:text-white">
                     Time Slots
                   </td>
-                  {sortedTimeSlots.map((slot) => (
-                    <td key={slot.id} className="p-3">
-                      <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600 text-xs">
-                        <Clock className="w-3 h-3 text-gray-500 flex-shrink-0" />
-                        <span className="font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                          {slot.startTime}-{slot.endTime}
-                        </span>
-                        <button
-                          onClick={() => removeTimeSlot(slot.id)}
-                          className="text-red-600 hover:text-red-800 transition-colors flex-shrink-0"
-                          title="Remove time slot"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </td>
-                  ))}
+                  {sortedTimeSlots.map((slot) => {
+                    const columnColor = dateColorMap.get(slot.date);
+                    const bgColor = columnColor === 'light' 
+                      ? 'bg-gray-100 dark:bg-gray-700' 
+                      : 'bg-gray-200 dark:bg-gray-600';
+                    
+                    return (
+                      <td key={slot.id} className={`p-3 ${bgColor}`}>
+                        <div className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600 text-xs">
+                          <Clock className="w-3 h-3 text-gray-500 flex-shrink-0" />
+                          <span className="font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                            {slot.startTime}-{slot.endTime}
+                          </span>
+                          <button
+                            onClick={() => removeTimeSlot(slot.id)}
+                            className="text-red-600 hover:text-red-800 transition-colors flex-shrink-0"
+                            title="Remove time slot"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </td>
+                    );
+                  })}
                 </tr>
                 
                 {/* Placeholder for future participant rows */}
@@ -257,11 +284,18 @@ export function MeetingScheduler({
                   <td className="p-3 text-sm text-gray-500 dark:text-gray-400 italic">
                     Participants
                   </td>
-                  {sortedTimeSlots.map((slot) => (
-                    <td key={slot.id} className="p-3 text-left text-sm text-gray-400 dark:text-gray-500 italic">
-                      (Coming soon)
-                    </td>
-                  ))}
+                  {sortedTimeSlots.map((slot) => {
+                    const columnColor = dateColorMap.get(slot.date);
+                    const bgColor = columnColor === 'light' 
+                      ? 'bg-gray-100 dark:bg-gray-700' 
+                      : 'bg-gray-200 dark:bg-gray-600';
+                    
+                    return (
+                      <td key={slot.id} className={`p-3 text-left text-sm text-gray-400 dark:text-gray-500 italic ${bgColor}`}>
+                        (Coming soon)
+                      </td>
+                    );
+                  })}
                 </tr>
               </tbody>
             </table>
