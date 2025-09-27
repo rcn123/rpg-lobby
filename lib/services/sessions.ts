@@ -50,10 +50,13 @@ export const sessionsService = {
       console.log('🌐 Supabase URL available:', !!process.env.NEXT_PUBLIC_SUPABASE_URL);
       console.log('🔑 Supabase anon key available:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
       
-      // Start with the simplest possible query
+      // Start with a query that joins with users table to get GM info
       let query = (supabaseAdmin as any)
         .from('sessions')
-        .select('*');
+        .select(`
+          *,
+          users!sessions_gm_user_id_fkey(*)
+        `);
 
       // Apply filters
       if (filters?.gameSystem) {
@@ -106,8 +109,19 @@ export const sessionsService = {
         const gameSystem = GAME_SYSTEMS.find(gs => gs.id === (row as any).game_system_id) || 
                           { id: (row as any).game_system_id, name: 'Unknown System' };
         
-        // For now, we'll create a minimal GM object since we're not joining with users table
-        const gm = {
+        // Use the real GM data from the join
+        const gm = row.users ? {
+          id: row.users.id,
+          email: row.users.email,
+          name: row.users.name,
+          avatar: row.users.avatar,
+          location: row.users.location,
+          timezone: row.users.timezone || 'Europe/Stockholm',
+          authProvider: row.users.auth_provider || 'email',
+          authProviderId: row.users.auth_provider_id,
+          createdAt: row.users.created_at,
+          updatedAt: row.users.updated_at,
+        } : {
           id: (row as any).gm_user_id,
           email: 'unknown@example.com',
           name: 'Unknown GM',

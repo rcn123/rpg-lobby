@@ -159,6 +159,7 @@ function SessionForm({ user, onSuccess, onCancel }: { user: User; onSuccess: () 
     isOnline: true,
     location: { serverName: '', channelName: '', joinLink: '' },
     characterCreation: 'pregenerated',
+    gmName: user.name,
   });
 
   const handleInputChange = (field: keyof CreateSessionData, value: string | number | boolean) => {

@@ -6,6 +6,7 @@
 
 import type { Session, CreateSessionData, UpdateSessionData, SessionFilters, ApiResponse, User } from '../types';
 import { supabase } from '../supabase';
+import { authService } from './auth-service';
 
 class ApiClient {
   private baseUrl = '';
@@ -22,15 +23,9 @@ class ApiClient {
     try {
       console.log(`🌐 API Request: ${options.method || 'GET'} ${endpoint}`);
       
-      // Get the current session token
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log('🔑 Session token available:', !!session?.access_token);
-      console.log('🔑 Session details:', { 
-        hasSession: !!session, 
-        hasUser: !!session?.user, 
-        hasToken: !!session?.access_token,
-        tokenLength: session?.access_token?.length || 0
-      });
+      // Get auth headers from AuthService
+      const authHeaders = await authService.getAuthHeaders();
+      console.log('🔑 Auth headers:', authHeaders);
       
       const url = `${this.baseUrl}${endpoint}`;
       console.log('🔗 Full URL:', url);
@@ -42,9 +37,7 @@ class ApiClient {
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
-          ...(session?.access_token && {
-            'Authorization': `Bearer ${session.access_token}`
-          }),
+          ...authHeaders,
           ...options.headers,
         },
         signal: controller.signal,
@@ -142,6 +135,10 @@ class ApiClient {
   // Users API
   async getCurrentUser(): Promise<ApiResponse<User>> {
     return this.request<User>('/users');
+  }
+
+  async getUsers(): Promise<ApiResponse<User[]>> {
+    return this.request<User[]>('/users/all');
   }
 
   async getUserById(id: string): Promise<ApiResponse<User>> {

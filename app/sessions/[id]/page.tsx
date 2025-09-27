@@ -301,11 +301,10 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
               </div>
 
               {/* Description */}
-              <div className="prose prose-lg prose-gray dark:prose-invert max-w-none">
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg">
-                  {session.description}
-                </p>
-              </div>
+              <div 
+                className="prose prose-lg prose-gray dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed text-lg"
+                dangerouslySetInnerHTML={{ __html: session.description }}
+              />
             </div>
 
             {/* Time Information */}
