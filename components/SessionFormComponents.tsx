@@ -12,9 +12,14 @@ interface MainInformationProps {
 export function MainInformation({ formData, onInputChange }: MainInformationProps) {
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-slate-600 pb-2">
-        Main Information
-      </h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-slate-600 pb-2">
+          Main Information
+        </h3>
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          Session GM: <span className="font-medium text-gray-900 dark:text-white">{formData.gmName || 'Loading...'}</span>
+        </div>
+      </div>
       
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

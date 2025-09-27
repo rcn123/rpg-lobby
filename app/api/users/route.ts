@@ -7,6 +7,13 @@ import { NotFoundError, BadRequestError } from '@/lib/core/errors';
 export const GET = withHandler(async (req: NextRequest) => {
   const user = await requireUser(req);
 
+  // If this is a switched user, we already have the full user object
+  // Check if it's our User type (has name property) vs Supabase auth user
+  if ('name' in user && user.name) {
+    return user;
+  }
+
+  // Otherwise, look up by JWT ID (normal auth flow)
   const profile = await UsersService.getUserByJwtId(user.id);
   if (!profile) throw new NotFoundError('User not found');
   return profile;

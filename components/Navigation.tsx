@@ -4,11 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { UserSwitcher } from '@/components/UserSwitcher';
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { user, loading, signOut, isAuthenticated } = useAuth();
+  const { user, loading, signOut, isAuthenticated, switchUser } = useAuth();
 
   const navigation = [
     { name: 'Home', href: '/' },
@@ -84,6 +85,10 @@ export function Navigation() {
                       </div>
                     )}
                   </Link>
+                  <UserSwitcher 
+                    currentUser={user} 
+                    onUserChange={switchUser} 
+                  />
                 </div>
               </div>
             ) : (

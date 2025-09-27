@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from './supabase';
+import { authService } from './services/auth-service';
 import type { User } from './types';
 
 interface AuthContextType {
@@ -9,6 +10,7 @@ interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
+  switchUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -94,8 +96,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(false);
   };
 
+  const switchUser = (newUser: User) => {
+    authService.switchUser(newUser);
+    setUser(newUser);
+    setIsAuthenticated(true);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signOut, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, loading, signOut, isAuthenticated, switchUser }}>
       {children}
     </AuthContext.Provider>
   );

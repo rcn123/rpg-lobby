@@ -159,9 +159,10 @@ export function SessionCard({ session, onJoin, onJoinWaitingList, onView, isJoin
         </div>
 
         {/* Description */}
-        <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
-          {session.description}
-        </p>
+        <div 
+          className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 prose prose-sm max-w-none"
+          dangerouslySetInnerHTML={{ __html: session.description }}
+        />
 
         {/* Session Details */}
         <div className="space-y-3 mb-4 text-sm">

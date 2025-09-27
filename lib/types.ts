@@ -105,6 +105,7 @@ export interface CreateSessionData {
   location?: LocationType;
   image?: string;
   characterCreation: CharacterCreation;
+  gmName?: string;
 }
 
 export interface UpdateSessionData extends Partial<CreateSessionData> {

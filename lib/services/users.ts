@@ -25,6 +25,27 @@ function transformUserRow(row: any): User {
 
 export class UsersService {
   /**
+   * Get all users
+   */
+  static async getAllUsers(): Promise<User[]> {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('name');
+
+      if (error || !data) {
+        return [];
+      }
+
+      return data.map(transformUserRow);
+    } catch (error) {
+      console.error('Error fetching all users:', error);
+      return [];
+    }
+  }
+
+  /**
    * Get user profile by ID
    */
   static async getUserById(userId: string): Promise<User | null> {

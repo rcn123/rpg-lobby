@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Calendar, Clock, Plus, Trash2 } from 'lucide-react';
-import dayjs, { Dayjs } from 'dayjs';
+import { useState, useEffect, useRef } from 'react';
+import { Calendar, Clock, Plus, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { format, parseISO, startOfDay, isBefore, isToday, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
 
 interface TimeSlot {
   id: string;
@@ -27,6 +27,7 @@ export function MeetingScheduler({
     startTime: '',
     endTime: ''
   });
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   // Generate time options from 09:00 to 21:00 in 30-minute intervals
   const generateTimeOptions = () => {
@@ -54,7 +55,7 @@ export function MeetingScheduler({
     const dateColorMap = new Map();
     
     uniqueDates.forEach((date, index) => {
-      // Alternate between light and dark colors
+      // First time slot column should be light, then alternate
       const isLight = index % 2 === 0;
       dateColorMap.set(date, isLight ? 'light' : 'dark');
     });
@@ -63,6 +64,59 @@ export function MeetingScheduler({
   };
 
   const dateColorMap = getColumnColors();
+
+  // Calendar helper functions using date-fns
+  const getDaysInMonth = (date: Date) => {
+    const monthStart = startOfMonth(date);
+    const monthEnd = endOfMonth(date);
+    const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+    
+    const days = [];
+    const startingDayOfWeek = getDay(monthStart);
+    
+    // Adjust for Monday as first day of week (Sunday = 0, Monday = 1, etc.)
+    // If Sunday (0), we need 6 empty cells. If Monday (1), we need 0 empty cells, etc.
+    const emptyCells = startingDayOfWeek === 0 ? 6 : startingDayOfWeek - 1;
+    
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < emptyCells; i++) {
+      days.push(null);
+    }
+    
+    // Add all days of the month
+    days.push(...daysInMonth);
+    
+    return days;
+  };
+
+  const formatDateForInput = (date: Date) => {
+    return format(date, 'yyyy-MM-dd');
+  };
+
+  const isDateSelected = (date: Date) => {
+    return newSlot.date === formatDateForInput(date);
+  };
+
+  const isDateInPast = (date: Date) => {
+    return isBefore(startOfDay(date), startOfDay(new Date()));
+  };
+
+  const hasTimeSlotsOnDate = (date: Date) => {
+    const dateString = formatDateForInput(date);
+    return timeSlots.some(slot => slot.date === dateString);
+  };
+
+  const handleDateSelect = (date: Date) => {
+    if (!isDateInPast(date)) {
+      setNewSlot(prev => ({ ...prev, date: formatDateForInput(date) }));
+    }
+  };
+
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    setCurrentMonth(prev => {
+      return direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1);
+    });
+  };
 
   const addTimeSlot = () => {
     if (newSlot.date && newSlot.startTime) {
@@ -114,15 +168,100 @@ export function MeetingScheduler({
 
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-      {/* Default Duration Setting */}
-      <div className="mb-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+      {/* Add Time Slot */}
+      <div className="mb-8">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
           <Clock className="w-5 h-5 mr-2" />
-          Default Duration
+          Add Time Slot
         </h3>
-        <div className="max-w-xs">
+        
+        <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Calendar Section */}
+            <div>
+              <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-4">
+                {/* Calendar Header with Select Date label */}
+                <div className="flex items-center justify-between mb-4">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Select Date
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => navigateMonth('prev')}
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {format(currentMonth, 'MMMM yyyy')}
+                    </h3>
+                    <button
+                      onClick={() => navigateMonth('next')}
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                
+                  {/* Calendar Grid */}
+                  <div className="grid grid-cols-7 gap-1 mb-2">
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                      <div key={day} className="text-center text-xs font-medium text-gray-500 dark:text-gray-400 p-2">
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+                
+                <div className="grid grid-cols-7 gap-1">
+                  {getDaysInMonth(currentMonth).map((date, index) => (
+                    <button
+                      key={index}
+                      onClick={() => date && handleDateSelect(date)}
+                      disabled={!date}
+                      className={`
+                        p-2 text-sm rounded transition-colors
+                        ${!date ? 'cursor-default' : 'cursor-pointer'}
+                        ${date && isDateSelected(date) 
+                          ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                          : date && isDateInPast(date)
+                            ? 'text-gray-300 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            : date
+                              ? 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
+                              : ''
+                        }
+                      `}
+                    >
+                      <div className="relative">
+                        {date ? date.getDate() : ''}
+                        {date && hasTimeSlotsOnDate(date) && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></div>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Legend */}
+                <div className="mt-3 flex items-center justify-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Has time slots</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Time Selection Section */}
+            <div className="space-y-4">
+              <div>
+                <div className="px-3 py-2 text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600">
+                  {newSlot.date ? format(parseISO(newSlot.date), 'EEEE, MMMM d, yyyy') : '👈Select a date'}
+                </div>
+              </div>
+              <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Default Duration for New Time Slots
+                  Default Duration
           </label>
           <select
             value={currentDefaultDuration}
@@ -138,29 +277,6 @@ export function MeetingScheduler({
             <option value={300}>5 hours</option>
             <option value={360}>6 hours</option>
           </select>
-        </div>
-      </div>
-
-      {/* Add Time Slot */}
-      <div className="mb-8">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-          <Clock className="w-5 h-5 mr-2" />
-          Add Time Slot
-        </h3>
-        
-        <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Date
-              </label>
-              <input
-                type="date"
-                value={newSlot.date}
-                onChange={(e) => setNewSlot(prev => ({ ...prev, date: e.target.value }))}
-                min={new Date().toISOString().split('T')[0]}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
-              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -197,13 +313,15 @@ export function MeetingScheduler({
                 ))}
               </select>
             </div>
-            <div className="flex items-end">
+              <div>
               <button
                 onClick={addTimeSlot}
-                className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                disabled={!newSlot.date || !newSlot.startTime}
+                className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
               >
                 Add Time Slot
               </button>
+              </div>
             </div>
           </div>
         </div>
@@ -217,28 +335,28 @@ export function MeetingScheduler({
             Available Time Slots
           </h3>
           
-          <div className="overflow-x-auto">
-            <table className="border-collapse bg-white dark:bg-gray-800 rounded-lg shadow table-fixed" style={{ width: 'auto' }}>
+          <div className="overflow-x-auto rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+            <table className="bg-white dark:bg-gray-800" style={{ width: 'auto' }}>
               <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-600">
-                  <th className="text-left p-3 font-semibold text-gray-900 dark:text-white w-24">
+                <tr className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                  <th className="text-left px-6 py-4 font-semibold text-gray-900 dark:text-white text-sm">
                     Date
                   </th>
                   {sortedTimeSlots.map((slot) => {
-                    const dateObj = new Date(slot.date);
-                    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-                    const dayNumber = dateObj.getDate();
-                    const monthName = dateObj.toLocaleDateString('en-US', { month: 'short' });
+                    const dateObj = parseISO(slot.date);
+                    const dayName = format(dateObj, 'EEE');
+                    const dayNumber = format(dateObj, 'd');
+                    const monthName = format(dateObj, 'MMM');
                     const columnColor = dateColorMap.get(slot.date);
                     const bgColor = columnColor === 'light' 
                       ? 'bg-gray-100 dark:bg-gray-700' 
                       : 'bg-gray-200 dark:bg-gray-600';
                     
                     return (
-                      <th key={slot.id} className={`text-left p-3 font-semibold text-gray-900 dark:text-white w-32 ${bgColor}`}>
-                        <div>
-                          <div className="text-sm">{dayName}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                      <th key={slot.id} className={`text-center px-3 py-4 font-semibold text-gray-900 dark:text-white w-32 ${bgColor}`}>
+                        <div className="flex flex-col items-center">
+                          <div className="text-sm font-medium">{dayName}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             {monthName} {dayNumber}
                           </div>
                         </div>
@@ -250,7 +368,7 @@ export function MeetingScheduler({
               <tbody>
                 {/* Time slots row */}
                 <tr className="border-b border-gray-200 dark:border-gray-600">
-                  <td className="p-3 font-medium text-gray-900 dark:text-white">
+                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-white text-sm">
                     Time Slots
                   </td>
                   {sortedTimeSlots.map((slot) => {
@@ -260,40 +378,22 @@ export function MeetingScheduler({
                       : 'bg-gray-200 dark:bg-gray-600';
                     
                     return (
-                      <td key={slot.id} className={`p-3 ${bgColor}`}>
-                        <div className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600 text-xs">
-                          <Clock className="w-3 h-3 text-gray-500 flex-shrink-0" />
-                          <span className="font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                            {slot.startTime}-{slot.endTime}
-                          </span>
-                          <button
-                            onClick={() => removeTimeSlot(slot.id)}
-                            className="text-red-600 hover:text-red-800 transition-colors flex-shrink-0"
-                            title="Remove time slot"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </div>
-                      </td>
-                    );
-                  })}
-                </tr>
-                
-                {/* Placeholder for future participant rows */}
-                <tr>
-                  <td className="p-3 text-sm text-gray-500 dark:text-gray-400 italic">
-                    Participants
-                  </td>
-                  {sortedTimeSlots.map((slot) => {
-                    const columnColor = dateColorMap.get(slot.date);
-                    const bgColor = columnColor === 'light' 
-                      ? 'bg-gray-100 dark:bg-gray-700' 
-                      : 'bg-gray-200 dark:bg-gray-600';
-                    
-                    return (
-                      <td key={slot.id} className={`p-3 text-left text-sm text-gray-400 dark:text-gray-500 italic ${bgColor}`}>
-                        (Coming soon)
-                      </td>
+                      <td key={slot.id} className={`px-3 py-4 ${bgColor}`}>
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">
+                            <span className="font-medium text-gray-900 dark:text-white text-sm">
+                          {slot.startTime}-{slot.endTime}
+                        </span>
+                        <button
+                          onClick={() => removeTimeSlot(slot.id)}
+                              className="text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1.5 rounded-full transition-all duration-200 group"
+                          title="Remove time slot"
+                        >
+                              <X className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                        </button>
+                          </div>
+                      </div>
+                    </td>
                     );
                   })}
                 </tr>

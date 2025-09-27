@@ -1,14 +1,30 @@
 import { NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { UsersService } from "@/lib/services/users";
 import { UnauthorizedError } from "@/lib/core/errors";
 
 export async function requireUser(req: NextRequest) {
   console.log('🔐 Auth Guard: Checking authentication');
-  console.log('📦 Request headers available:', req.headers ? 'Yes' : 'No');
   
+  // Check for switched user header first
+  const switchedUserId = req.headers.get('X-Switched-User-ID');
+  if (switchedUserId) {
+    console.log('🔄 Switched user detected:', switchedUserId);
+    
+    // Validate the switched user exists in database
+    const user = await UsersService.getUserById(switchedUserId);
+    if (!user) {
+      console.log('❌ Switched user not found in database');
+      throw new UnauthorizedError();
+    }
+    
+    console.log('✅ Switched user validated:', { id: user.id, name: user.name });
+    return user;
+  }
+  
+  // Fall back to JWT validation
   const authHeader = req.headers.get('authorization');
   console.log('🔑 Authorization header:', authHeader ? 'Present' : 'Missing');
-  console.log('🔑 Authorization header value:', authHeader);
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     console.log('❌ No valid authorization header found');
