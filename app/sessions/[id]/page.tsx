@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { Layout } from '@/components/Layout';
+import { SafeHTML } from '@/components/SafeHTML';
 import { sessionsService } from '@/lib/services/sessions';
 import type { Session } from '@/lib/types';
 
@@ -302,9 +303,10 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
 
               {/* Description */}
               <div className="prose prose-lg prose-gray dark:prose-invert max-w-none">
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg">
-                  {session.description}
-                </p>
+                <SafeHTML
+                  html={session.description}
+                  className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg"
+                />
               </div>
             </div>
 

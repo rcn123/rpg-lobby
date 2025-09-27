@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from './supabase';
+import { authWrapper } from './auth-wrapper';
 import type { User } from './types';
 
 interface AuthContextType {
@@ -9,6 +9,8 @@ interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
+  switchUser: (userId: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,31 +20,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Fetch effective user from API
+  const fetchUser = async () => {
+    try {
+      console.log('🔍 fetchUser: Starting...');
+      const { data: { session } } = await authWrapper.getSession();
+      console.log('🔍 fetchUser: Session:', { hasSession: !!session, hasToken: !!session?.access_token });
+
+      if (!session?.access_token) {
+        console.log('🔍 fetchUser: No session token');
+        return null;
+      }
+
+      console.log('🔍 fetchUser: Calling /api/user/me...');
+      const response = await fetch('/api/user/me', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      console.log('🔍 fetchUser: Response status:', response.status);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('🔍 fetchUser: Success:', result);
+        return result.data;
+      } else {
+        const errorText = await response.text();
+        console.log('🔍 fetchUser: API error:', errorText);
+        return null;
+      }
+    } catch (error) {
+      console.error('🔍 fetchUser: Exception:', error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
       console.log('🔐 AuthProvider: Getting initial session...');
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await authWrapper.getSession();
       console.log('🔐 AuthProvider: Initial session:', { hasSession: !!session, hasUser: !!session?.user });
-      
+
       if (session?.user) {
-        // Create user object from session data (no API calls)
-        const userData: User = {
-          id: session.user.id,
-          email: session.user.email || '',
-          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'User',
-          avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || undefined,
-          location: undefined,
-          timezone: 'Europe/Stockholm',
-          authProvider: 'email', // Default, could be extracted from metadata
-          authProviderId: undefined,
-          createdAt: session.user.created_at,
-          updatedAt: session.user.updated_at || session.user.created_at,
-        };
-        
-        console.log('🔐 AuthProvider: Setting authenticated user:', userData.email);
-        setUser(userData);
-        setIsAuthenticated(true);
+        // Get effective user from API
+        const effectiveUser = await fetchUser();
+        if (effectiveUser) {
+          console.log('🔐 AuthProvider: Setting effective user:', effectiveUser.email);
+          setUser(effectiveUser);
+          setIsAuthenticated(true);
+        } else {
+          console.log('🔐 AuthProvider: Failed to get effective user');
+          setUser(null);
+          setIsAuthenticated(false);
+        }
       } else {
         console.log('🔐 AuthProvider: No session, setting unauthenticated');
         setUser(null);
@@ -54,28 +86,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     getInitialSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = authWrapper.onAuthStateChange(
       async (event, session) => {
         console.log('🔐 Auth state change:', event, { hasSession: !!session, hasUser: !!session?.user });
-        
+
         if (session?.user) {
-          // Create user object from session data (no API calls)
-          const userData: User = {
-            id: session.user.id,
-            email: session.user.email || '',
-            name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'User',
-            avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || undefined,
-            location: undefined,
-            timezone: 'Europe/Stockholm',
-            authProvider: 'email',
-            authProviderId: undefined,
-            createdAt: session.user.created_at,
-            updatedAt: session.user.updated_at || session.user.created_at,
-          };
-          
-          console.log('🔐 AuthProvider: Auth change - setting authenticated user:', userData.email);
-          setUser(userData);
-          setIsAuthenticated(true);
+          // Get effective user from API
+          const effectiveUser = await fetchUser();
+          if (effectiveUser) {
+            console.log('🔐 AuthProvider: Auth change - setting effective user:', effectiveUser.email);
+            setUser(effectiveUser);
+            setIsAuthenticated(true);
+          } else {
+            console.log('🔐 AuthProvider: Auth change - failed to get effective user');
+            setUser(null);
+            setIsAuthenticated(false);
+          }
         } else {
           console.log('🔐 AuthProvider: Auth change - no session, setting unauthenticated');
           setUser(null);
@@ -89,13 +115,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await authWrapper.signOut();
     setUser(null);
     setIsAuthenticated(false);
   };
 
+  const switchUser = async (userId: string) => {
+    setLoading(true);
+    try {
+      const { data: { session } } = await authWrapper.getSession();
+      if (!session?.access_token) return;
+
+      const response = await fetch('/api/user/switch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ targetUserId: userId })
+      });
+
+      if (response.ok) {
+        // Refresh user to get the switched user
+        await refreshUser();
+      }
+    } catch (error) {
+      console.error('Error switching user:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const refreshUser = async () => {
+    const effectiveUser = await fetchUser();
+    if (effectiveUser) {
+      setUser(effectiveUser);
+      setIsAuthenticated(true);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signOut, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, loading, signOut, isAuthenticated, switchUser, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

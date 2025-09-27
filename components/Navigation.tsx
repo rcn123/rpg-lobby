@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { UserSwitcher } from '@/components/UserSwitcher';
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -71,9 +72,9 @@ export function Navigation() {
                   </span>
                   <Link href="/profile" className="h-8 w-8 rounded-full overflow-hidden hover:opacity-80 transition-opacity cursor-pointer">
                     {user.avatar ? (
-                      <img 
-                        src={user.avatar} 
-                        alt={user.name || 'User'} 
+                      <img
+                        src={user.avatar}
+                        alt={user.name || 'User'}
                         className="h-full w-full object-cover"
                       />
                     ) : (
@@ -84,6 +85,7 @@ export function Navigation() {
                       </div>
                     )}
                   </Link>
+                  <UserSwitcher />
                 </div>
               </div>
             ) : (

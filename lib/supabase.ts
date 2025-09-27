@@ -53,6 +53,7 @@ export type Database = {
           timezone: string;
           auth_provider: 'facebook' | 'google' | 'email' | 'github' | 'discord';
           auth_provider_id: string | null;
+          act_as: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -68,6 +69,7 @@ export type Database = {
           timezone?: string;
           auth_provider: 'facebook' | 'google' | 'email' | 'github' | 'discord';
           auth_provider_id?: string | null;
+          act_as?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -83,6 +85,7 @@ export type Database = {
           timezone?: string;
           auth_provider?: 'facebook' | 'google' | 'email' | 'github' | 'discord';
           auth_provider_id?: string | null;
+          act_as?: string | null;
           created_at?: string;
           updated_at?: string;
         };

@@ -1,5 +1,6 @@
 import { Session, Location, OnlineLocation } from '@/lib/types';
 import Image from 'next/image';
+import { SafeHTML } from './SafeHTML';
 
 interface SessionCardProps {
   session: Session;
@@ -159,9 +160,10 @@ export function SessionCard({ session, onJoin, onJoinWaitingList, onView, isJoin
         </div>
 
         {/* Description */}
-        <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
-          {session.description}
-        </p>
+        <SafeHTML
+          html={session.description}
+          className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3"
+        />
 
         {/* Session Details */}
         <div className="space-y-3 mb-4 text-sm">

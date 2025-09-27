@@ -1,0 +1,209 @@
+
+● User Management System Refactoring Plan
+
+  Goal
+
+  Create a unified, consistent user management system that:
+  - Has a single source of truth for user state
+  - Abstracts Supabase dependencies for future flexibility
+  - Enables persistent user switching for development
+  - Maintains consistency between client and server
+
+  Architecture Overview
+
+  Single Source of Truth: Database via API
+
+  - Database (users table with act_as column) is the ONLY source of truth
+  - All user data flows through API endpoints - no direct database access from client
+  - No local storage for user state (prevents inconsistencies)
+  - JWT token only used for authentication, not for user data
+
+  Implementation Plan
+
+  Phase 1: Create Abstraction Layer
+
+  1.1 Create Auth Provider Interface
+
+  // lib/providers/auth-provider.interface.ts
+  interface IAuthProvider {
+    signIn(email: string, password: string): Promise<AuthResult>
+    signInWithOAuth(provider: string): Promise<AuthResult>
+    signOut(): Promise<void>
+    getSession(): Promise<Session | null>
+    onAuthStateChange(callback: (session: Session | null) => void): Unsubscribe
+  }
+
+  1.2 Implement Supabase Auth Provider
+
+  // lib/providers/supabase-auth-provider.ts
+  class SupabaseAuthProvider implements IAuthProvider {
+    // Wraps all Supabase auth methods
+    // This is the ONLY file that imports from Supabase
+  }
+
+  Phase 2: Unified User Service
+
+  2.1 Create Server-Side User Service
+
+  // lib/services/user-service.server.ts
+  class UserServiceServer {
+    // Gets effective user (checking act_as)
+    async getEffectiveUser(jwtId: string): Promise<User>
+
+    // Sets act_as for user switching
+    async setActingAs(jwtId: string, targetUserId: string | null): Promise<void>
+
+    // Gets user by ID
+    async getUserById(userId: string): Promise<User>
+  }
+
+  2.2 Create Client-Side User Service
+
+  // lib/services/user-service.client.ts
+  class UserServiceClient {
+    // ONLY makes API calls, no direct database/storage access
+    async getCurrentUser(): Promise<User>
+    async switchUser(userId: string): Promise<User>
+    async clearUserSwitch(): Promise<User>
+    async getAllUsers(): Promise<User[]>
+  }
+
+  Phase 3: API Layer
+
+  3.1 User API Endpoints
+
+  // app/api/user/current/route.ts
+  GET /api/user/current
+  - Validates JWT token
+  - Returns effective user (respects act_as)
+
+  // app/api/user/switch/route.ts
+  POST /api/user/switch
+  - Body: { targetUserId: string }
+  - Updates act_as in database
+  - Returns new effective user
+
+  DELETE /api/user/switch
+  - Clears act_as
+  - Returns original user
+
+  // app/api/users/route.ts
+  GET /api/users
+  - Returns all users for dropdown
+
+  Phase 4: React Context Refactor
+
+  4.1 New Auth Context Structure
+
+  // lib/contexts/auth-context.tsx
+  interface AuthContextValue {
+    user: User | null           // Current effective user
+    actualUser: User | null      // Original authenticated user
+    isImpersonating: boolean     // True if act_as is set
+    loading: boolean
+    error: string | null
+
+    // Actions
+    switchUser: (userId: string) => Promise<void>
+    clearSwitch: () => Promise<void>
+    refresh: () => Promise<void>
+    signOut: () => Promise<void>
+  }
+
+  4.2 Auth Context Implementation
+
+  - On mount: Call /api/user/current to get effective user
+  - On auth state change: Call /api/user/current to refresh
+  - Never builds user from JWT/session metadata
+  - Always fetches from API for consistency
+
+  Phase 5: UI Components
+
+  5.1 UserSwitcher Component
+
+  // components/UserSwitcher.tsx
+  - Dropdown showing all available users
+  - Highlights current effective user
+  - Shows badge if impersonating
+  - Calls context.switchUser(userId)
+
+  5.2 Navigation Integration
+
+  - Shows current effective user
+  - Displays impersonation indicator
+  - Includes UserSwitcher dropdown for dev mode
+
+  Phase 6: Server-Side Consistency
+
+  6.1 Middleware for API Routes
+
+  // lib/middleware/auth.ts
+  export async function withAuth(handler) {
+    return async (req) => {
+      const token = extractToken(req)
+      const user = await userService.getEffectiveUser(token)
+      req.user = user  // Attach effective user to request
+      return handler(req)
+    }
+  }
+
+  6.2 Server Components
+
+  - Use same UserServiceServer for consistency
+  - Always check effective user via service
+
+  Data Flow
+
+  User Login Flow
+
+  1. User logs in via Supabase (wrapped)
+  2. JWT token stored in cookie/header
+  3. Client calls /api/user/current
+  4. API validates token, checks act_as, returns effective user
+  5. Client stores user in React context
+
+  User Switch Flow
+
+  1. User selects from dropdown
+  2. Client calls /api/user/switch with target user ID
+  3. API updates act_as column in database
+  4. API returns new effective user
+  5. Client updates React context
+  6. All subsequent API calls use same JWT but get different effective user
+
+  Page Reload Flow
+
+  1. App initializes
+  2. Auth context calls /api/user/current
+  3. API checks JWT token and act_as column
+  4. Returns effective user (persisted from before reload)
+  5. UI shows correct user
+
+  Benefits
+
+  1. Single Source of Truth: Database via API endpoints only
+  2. Abstracted Dependencies: Easy to replace Supabase later
+  3. Consistent Behavior: Same logic on client and server
+  4. Persistent State: User switching survives reloads
+  5. Security: Server validates all user switches
+  6. Developer Experience: Easy impersonation for testing
+
+  Migration Strategy
+
+  1. Phase 1-2: Create abstractions without breaking existing code
+  2. Phase 3: Add new API endpoints alongside existing
+  3. Phase 4: Update Auth Context to use new APIs
+  4. Phase 5: Add UI components
+  5. Phase 6: Update server-side code
+  6. Cleanup: Remove old code and direct Supabase imports
+
+  Success Criteria
+
+  - User switching persists across page reloads
+  - No direct Supabase imports outside provider layer
+  - Client and server show same effective user
+  - All user data flows through API endpoints
+  - Clear visual indication when impersonating
+  - Easy to switch between users via dropdown
+
+  This plan ensures a clean, maintainable architecture with a single source of truth and consistent behavior across the entire application.

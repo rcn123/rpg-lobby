@@ -100,31 +100,42 @@ export const sessionsService = {
         return { data: [], error: null, success: true };
       }
 
-      // Transform the data
-      const sessions: Session[] = data.map((row: any) => {
+      // Transform the data and fetch GM data
+      const sessions: Session[] = await Promise.all(data.map(async (row: any) => {
         // Use a default game system since we're not joining with game_systems table
-        const gameSystem = GAME_SYSTEMS.find(gs => gs.id === (row as any).game_system_id) || 
+        const gameSystem = GAME_SYSTEMS.find(gs => gs.id === (row as any).game_system_id) ||
                           { id: (row as any).game_system_id, name: 'Unknown System' };
-        
-        // For now, we'll create a minimal GM object since we're not joining with users table
-        const gm = {
-          id: (row as any).gm_user_id,
-          email: 'unknown@example.com',
-          name: 'Unknown GM',
-          avatar: undefined,
-          location: undefined,
-          timezone: 'Europe/Stockholm' as const,
-          authProvider: 'email' as const,
-          authProviderId: undefined,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
+
+        // Fetch the actual GM data
+        let gm;
+        try {
+          const { UsersService } = await import('./users');
+          gm = await UsersService.getUserById((row as any).gm_user_id);
+        } catch (error) {
+          console.error('Error fetching GM:', error);
+        }
+
+        // Fallback if GM not found
+        if (!gm) {
+          gm = {
+            id: (row as any).gm_user_id,
+            email: 'unknown@example.com',
+            name: 'Unknown GM',
+            avatar: undefined,
+            location: undefined,
+            timezone: 'Europe/Stockholm' as const,
+            authProvider: 'email' as const,
+            authProviderId: undefined,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+        }
 
         // Set players to empty array since we simplified the query
         const players: any[] = [];
 
         return transformSessionRow(row, gameSystem, gm, players);
-      });
+      }));
 
       // Apply client-side filters that couldn't be done in the query
       let filteredSessions = sessions;

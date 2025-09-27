@@ -25,6 +25,27 @@ function transformUserRow(row: any): User {
 
 export class UsersService {
   /**
+   * Get all users
+   */
+  static async getAllUsers(): Promise<User[]> {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('name');
+
+      if (error || !data) {
+        return [];
+      }
+
+      return data.map(transformUserRow);
+    } catch (error) {
+      console.error('Error fetching all users:', error);
+      return [];
+    }
+  }
+
+  /**
    * Get user profile by ID
    */
   static async getUserById(userId: string): Promise<User | null> {
@@ -69,6 +90,59 @@ export class UsersService {
   }
 
   /**
+   * Get effective user (checks act_as column for impersonation)
+   */
+  static async getEffectiveUser(userId: string): Promise<User | null> {
+    try {
+      // First get the user to check if they have act_as set
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id, act_as')
+        .eq('id', userId)
+        .single();
+
+      if (userError || !userData) {
+        return null;
+      }
+
+      // If act_as is set, return that user instead
+      if (userData.act_as) {
+        console.log('🔄 User is acting as:', userData.act_as);
+        return this.getUserById(userData.act_as);
+      }
+
+      // Otherwise return the original user
+      return this.getUserById(userId);
+    } catch (error) {
+      console.error('Error getting effective user:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Set user to act as another user (for development/testing)
+   */
+  static async setActAs(userId: string, targetUserId: string | null): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ act_as: targetUserId })
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Error setting act_as:', error);
+        return false;
+      }
+
+      console.log(`✅ User ${userId} now acting as ${targetUserId || 'themselves'}`);
+      return true;
+    } catch (error) {
+      console.error('Error setting act_as:', error);
+      return false;
+    }
+  }
+
+  /**
    * Create a new user profile
    */
   static async createUser(userData: {
@@ -80,12 +154,14 @@ export class UsersService {
     timezone?: string;
     authProvider: 'facebook' | 'google' | 'email' | 'github' | 'discord';
     authProviderId?: string;
+    role?: 'GM' | 'Player';
   }): Promise<User | null> {
     try {
       const insertData = {
         jwt_id: userData.jwtId,
         email: userData.email,
         name: userData.name,
+        role: userData.role || 'Player',
         avatar: userData.avatar || null,
         location: userData.location || null,
         timezone: userData.timezone || 'Europe/Stockholm',
